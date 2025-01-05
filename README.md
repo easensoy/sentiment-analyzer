@@ -30,6 +30,7 @@ This project implements a machine learning-based sentiment analysis system using
                     Sentiment
                     (Positive/
                     Negative)
+```
 
 ## Components
 
@@ -65,6 +66,7 @@ This project implements a machine learning-based sentiment analysis system using
 - **CI/CD**: GitHub Actions
 
 ## Installation
+
 ```bash
 # Clone repository
 git clone git@github.com:easensoy/sentiment-analyzer.git
@@ -76,3 +78,13 @@ source venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
+```
+
+## Usage
+(Add specific usage instructions here)
+
+## Contributing
+(Add contribution guidelines)
+
+## License
+(Add license information)
