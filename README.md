@@ -4,7 +4,30 @@
 This project implements a machine learning-based sentiment analysis system using Python. It features a FastAPI web service that provides real-time sentiment analysis of text inputs using a Support Vector Machine (SVM) classifier with TF-IDF vectorization.
 
 ## Architecture
-![Architecture](https://github.com/easensoy/sentiment-analyzer/raw/main/docs/architecture.png)
+Text Input
+│
+▼
+┌──────────────┐
+│   FastAPI    │
+│  Endpoint    │
+└──────┬───────┘
+│
+▼
+┌──────────────┐
+│   Text       │
+│Preprocessing │ ◄──── TF-IDF Vectorization
+└──────┬───────┘
+│
+▼
+┌──────────────┐
+│    SVM       │
+│  Classifier  │
+└──────┬───────┘
+│
+▼
+Sentiment
+(Positive/
+Negative)
 
 ### Components
 1. **Text Preprocessor** (`src/preprocessor.py`)
