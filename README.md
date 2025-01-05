@@ -6,36 +6,30 @@ This project implements a machine learning-based sentiment analysis system using
 ## Architecture
 
 ```text
-                   Text Input
-                        │
-                        ▼
-               ┌─────────────────┐
-               │  FastAPI        │
-               │  Endpoint       │
-               └────────┬────────┘
-                        │
-                        ▼
-               ┌─────────────────┐
-               │  Text           │    ◄─── TF-IDF
-               │  Preprocessing  │         Vectorization
-               └────────┬────────┘
-                        │
-                        ▼
-               ┌─────────────────┐
-               │  SVM            │
-               │  Classifier     │
-               └────────┬────────┘
-                        │
-                        ▼
-                   Sentiment
-                   (Positive/
-                   Negative)
-
-
-
-
-
-
+                    Text Input
+                         │
+                         ▼
+                ┌─────────────────┐
+                │  FastAPI        │
+                │  Endpoint       │
+                └────────┬────────┘
+                         │
+                         ▼
+                ┌─────────────────┐
+                │  Text           │    ◄─── TF-IDF
+                │  Preprocessing  │         Vectorization
+                └────────┬────────┘
+                         │
+                         ▼
+                ┌─────────────────┐
+                │  SVM            │
+                │  Classifier     │
+                └────────┬────────┘
+                         │
+                         ▼
+                    Sentiment
+                    (Positive/
+                    Negative)
 
 ## Components
 
