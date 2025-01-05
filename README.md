@@ -6,80 +6,72 @@ This project implements a machine learning-based sentiment analysis system using
 ## Architecture
 
 ```text
-                    Text Input
-                         │
-                         ▼
-                ┌─────────────────┐
-                │  FastAPI        │
-                │  Endpoint       │
-                └────────┬────────┘
-                         │
-                         ▼
-                ┌─────────────────┐
-                │  Text           │    ◄─── TF-IDF
-                │  Preprocessing  │         Vectorization
-                └────────┬────────┘
-                         │
-                         ▼
-                ┌─────────────────┐
-                │  SVM            │
-                │  Classifier     │
-                └────────┬────────┘
-                         │
-                         ▼
-                    Sentiment
-                    (Positive/
-                    Negative)
-Components
-1. Text Preprocessor (src/preprocessor.py)
-
-Handles text cleaning and normalization
-Implements TF-IDF vectorization
-Features:
-
-Special character removal
-Case normalization
-Text vectorization using sklearn's TfidfVectorizer
-
-
-
-2. Sentiment Model (src/model.py)
-
-Implements SVM classifier for sentiment analysis
-Provides:
-
-Model training interface
-Prediction capabilities
-Model persistence (save/load)
-
-
-
-3. API Service (src/api.py)
-
-FastAPI-based REST API
-Endpoints:
-
-POST /predict: Analyzes sentiment of input text
-
-
-Features:
-
-Error handling
-Input validation
-Asynchronous processing
+                   Text Input
+                        │
+                        ▼
+               ┌─────────────────┐
+               │  FastAPI        │
+               │  Endpoint       │
+               └────────┬────────┘
+                        │
+                        ▼
+               ┌─────────────────┐
+               │  Text           │    ◄─── TF-IDF
+               │  Preprocessing  │         Vectorization
+               └────────┬────────┘
+                        │
+                        ▼
+               ┌─────────────────┐
+               │  SVM            │
+               │  Classifier     │
+               └────────┬────────┘
+                        │
+                        ▼
+                   Sentiment
+                   (Positive/
+                   Negative)
 
 
 
 
-Technical Stack
 
-Machine Learning: scikit-learn, SVM
-Text Processing: TF-IDF Vectorization
-Web Framework: FastAPI
-Testing: pytest
-CI/CD: GitHub Actions
 
-Installation
+
+## Components
+
+### 1. Text Preprocessor (`src/preprocessor.py`)
+- Handles text cleaning and normalization
+- Implements TF-IDF vectorization
+- Features:
+  * Special character removal
+  * Case normalization
+  * Text vectorization using sklearn's TfidfVectorizer
+
+### 2. Sentiment Model (`src/model.py`)
+- Implements SVM classifier for sentiment analysis
+- Provides:
+  * Model training interface
+  * Prediction capabilities
+  * Model persistence (save/load)
+
+### 3. API Service (`src/api.py`)
+- FastAPI-based REST API
+- Endpoints:
+  * POST `/predict`: Analyzes sentiment of input text
+- Features:
+  * Error handling
+  * Input validation
+  * Asynchronous processing
+
+## Technical Stack
+- **Machine Learning**: scikit-learn, SVM
+- **Text Processing**: TF-IDF Vectorization
+- **Web Framework**: FastAPI
+- **Testing**: pytest
+- **CI/CD**: GitHub Actions
+
+## Installation
+```bash
 # Clone repository
 git clone git@github.com:easensoy/sentiment-analyzer.git
 cd sentiment-analyzer
