@@ -79,12 +79,3 @@ source venv/bin/activate
 # Install dependencies
 pip install -r requirements.txt
 ```
-
-## Usage
-(Add specific usage instructions here)
-
-## Contributing
-(Add contribution guidelines)
-
-## License
-(Add license information)
