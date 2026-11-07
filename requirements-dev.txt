@@ -1,0 +1,7 @@
+# Extra tools for rebuilding the dataset, the charts and the /docs screenshots.
+# Playwright drives the locally installed Edge or Chrome, so no browser download is needed.
+-r requirements.txt
+matplotlib==3.11.2
+pillow==13.0.0
+pyarrow==26.0.1
+playwright==1.64.1
