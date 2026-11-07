@@ -109,8 +109,9 @@ def compose(shots):
     sheet = Image.new("RGB", (width, height), SURFACE)
     draw = ImageDraw.Draw(sheet)
     draw.text((margin, margin), "FastAPI /docs answering four example reviews", font=title, fill=INK)
-    draw.text((margin, margin + 64), "POST /predict in Swagger UI, served by uvicorn from src.api:app with the "
-              "trained model loaded at startup; sentiment 1 = positive, 0 = negative", font=subtitle, fill=INK_2)
+    draw.text((margin, margin + 64), "POST /predict in Swagger UI, served by uvicorn from src.api:app; each answer "
+              "gives the label, the 0/1 sentiment and the SVM margin (a distance, not a probability)",
+              font=subtitle, fill=INK_2)
     y = margin + head_h
     for row, row_h in zip(rows, row_heights):
         x = margin
