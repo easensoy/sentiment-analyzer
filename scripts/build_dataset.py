@@ -34,11 +34,16 @@ def main() -> None:
     parser.add_argument("--out", type=Path, default=ROOT / "data" / "training_data.csv")
     parser.add_argument("--per-class", type=int, default=5000, help="reviews per label")
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--allow-checksum-mismatch", action="store_true",
+                        help="build from a file other than the pinned revision (the sample will differ)")
     args = parser.parse_args()
 
     digest = hashlib.sha256(args.parquet.read_bytes()).hexdigest()
     if digest != PINNED_SHA256:
-        print(f"warning: sha256 {digest} is not the pinned revision, so the sample will differ")
+        problem = f"sha256 {digest} is not the pinned revision ({PINNED_SHA256})"
+        if not args.allow_checksum_mismatch:
+            raise SystemExit(f"{problem}; pass --allow-checksum-mismatch to build anyway")
+        print(f"warning: {problem}, so the sample will differ")
 
     # The Hugging Face schema metadata names the labels; check the mapping rather than assume it.
     features = json.loads(pq.read_schema(args.parquet).metadata[b"huggingface"])["info"]["features"]
