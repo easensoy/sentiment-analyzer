@@ -42,6 +42,7 @@ DPI = 200
 SURFACE, INK, INK_2, MUTED = "#fcfcfb", "#0b0b0b", "#52514e", "#898781"
 GRID, AXIS, WHITE = "#e1e0d9", "#c3c2b7", "#ffffff"
 NEG, POS = "#e34948", "#2a78d6"  # diverging poles: negative / positive sentiment
+NEG_MARK, POS_MARK = "s", "o"  # a second cue besides colour: square = negative, circle = positive
 BLUE = {100: "#cde2fb", 150: "#b7d3f6", 200: "#9ec5f4", 250: "#86b6ef", 300: "#6da7ec",
         350: "#5598e7", 400: "#3987e5", 450: "#2a78d6", 500: "#256abf", 550: "#1c5cab",
         600: "#184f95", 650: "#104281", 700: "#0d366b"}
@@ -87,10 +88,10 @@ def axes(fig, left_in, bottom_in, width_in, height_in):
 
 
 def legend(fig, x_in, y_in, items):
-    """A row of dot + label keys in text ink (identity never by colour alone)."""
+    """A row of marker + label keys in text ink (identity never by colour alone)."""
     w, h = fig.get_size_inches()
-    handles = [Line2D([0], [0], marker="o", linestyle="none", markersize=7.5, markerfacecolor=color,
-                      markeredgecolor=SURFACE, markeredgewidth=1.5, label=label) for label, color in items]
+    handles = [Line2D([0], [0], marker=marker, linestyle="none", markersize=7.5, markerfacecolor=color,
+                      markeredgecolor=SURFACE, markeredgewidth=1.5, label=label) for label, color, marker in items]
     fig.legend(handles=handles, loc="upper left", bbox_to_anchor=(x_in / w, y_in / h), ncol=len(items),
                frameon=False, fontsize=9.5, labelcolor=INK_2, handletextpad=0.3, columnspacing=1.6,
                borderaxespad=0)
@@ -142,7 +143,7 @@ def class_balance(df, metrics):
     ]
     fig = figure(6.8, 4.9, "Exactly balanced: half negative, half positive in every split",
                  "Seeded sample of the IMDB train split (Maas et al., 2011); stratified 80/20 split, seed 42")
-    legend(fig, 0.30, 4.9 - 0.95, [("Negative (label 0)", NEG), ("Positive (label 1)", POS)])
+    legend(fig, 0.30, 4.9 - 0.95, [("Negative (label 0)", NEG, NEG_MARK), ("Positive (label 1)", POS, POS_MARK)])
     ax = axes(fig, 0.85, 0.80, 5.65, 2.95)
     top = max(max(c) for _, _, c in groups)
     ax.set_xlim(-0.55, len(groups) - 0.45)
@@ -205,7 +206,8 @@ def per_class(metrics):
                            f"{pc['negative']['recall']:.3f} on negative",
                  f"Precision, recall and F1 per class on the held-out split; macro F1 {metrics['macro_f1']:.4f}, "
                  f"accuracy {metrics['accuracy']:.4f}")
-    legend(fig, 0.30, 4.3 - 0.95, [(f"Negative (n = {n_neg:,})", NEG), (f"Positive (n = {n_pos:,})", POS)])
+    legend(fig, 0.30, 4.3 - 0.95, [(f"Negative (n = {n_neg:,})", NEG, NEG_MARK),
+                                   (f"Positive (n = {n_pos:,})", POS, POS_MARK)])
     ax = axes(fig, 1.15, 0.65, 6.25, 2.45)
     lo = np.floor((min(values) - 0.015) * 50) / 50
     hi = np.ceil((max(values) + 0.015) * 50) / 50
@@ -220,8 +222,8 @@ def per_class(metrics):
     for i, (_, key) in enumerate(rows):
         neg, pos = pc["negative"][key], pc["positive"][key]
         ax.plot([neg, pos], [i, i], color=AXIS, linewidth=1.5, solid_capstyle="round", zorder=1)
-        for value, color in ((neg, NEG), (pos, POS)):
-            ax.scatter([value], [i], s=72, color=color, edgecolors=SURFACE, linewidths=1.5, zorder=3)
+        for value, color, marker in ((neg, NEG, NEG_MARK), (pos, POS, POS_MARK)):
+            ax.scatter([value], [i], s=72, marker=marker, color=color, edgecolors=SURFACE, linewidths=1.5, zorder=3)
         left, right = sorted((neg, pos))
         ax.text(left - pad, i, f"{left:.3f}", ha="right", va="center", fontsize=9, color=INK)
         ax.text(right + pad, i, f"{right:.3f}", ha="left", va="center", fontsize=9, color=INK)
@@ -250,10 +252,11 @@ def top_terms(n=20):
     }).to_csv(OUT / "top_terms.csv", index=False, lineterminator="\n")
 
     height = 8.2
-    fig = figure(9.4, height, "The words that move the classifier most, by SVC weight",
-                 f"Top {n} of {len(terms):,} TF-IDF terms each way; terms are as clean_text leaves them "
-                 "(lowercase letters only, so didn't becomes didnt)")
-    legend(fig, 0.30, height - 0.95, [("Pushes toward negative", NEG), ("Pushes toward positive", POS)])
+    fig = figure(9.4, height, "Terms with the largest SVC weights, toward each class",
+                 f"Top {n} of {len(terms):,} TF-IDF terms per side. A term's effect on one review is its weight "
+                 "times its TF-IDF value in that review")
+    legend(fig, 0.30, height - 0.95, [("Weight toward negative", NEG, NEG_MARK),
+                                      ("Weight toward positive", POS, POS_MARK)])
     ax = axes(fig, 0.35, 0.65, 8.7, height - 2.0)
     m = max(-coef[neg_idx].min(), coef[pos_idx].max())
     room = m * 0.42  # space beyond the longest bar for its label
