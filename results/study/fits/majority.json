@@ -1,0 +1,14 @@
+{
+  "candidate_id": "majority",
+  "role": "constant prediction of the training partition's majority class (ties: negative)",
+  "config": null,
+  "training_set": "full",
+  "training_ids_sha256": "dcee790a2bb7cdf5d645d4dac51943da746730a164767b0076a9cb3ab34f938f",
+  "n_train": 25000,
+  "majority_class": 0,
+  "class_counts": [
+    12500,
+    12500
+  ],
+  "fit_seconds": 0.0
+}

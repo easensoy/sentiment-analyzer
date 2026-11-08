@@ -1,0 +1,22 @@
+{
+  "candidate_id": "linsvc_bi_v2_full",
+  "role": "cleaning comparison",
+  "config": {
+    "cleaning": "v2",
+    "ngram_range": [
+      1,
+      2
+    ],
+    "min_df": 1,
+    "estimator": "linear_svc",
+    "C": 0.5
+  },
+  "training_set": "full",
+  "training_ids_sha256": "dcee790a2bb7cdf5d645d4dac51943da746730a164767b0076a9cb3ab34f938f",
+  "n_train": 25000,
+  "model_version": "f8f12e1f3db7",
+  "artefact_sha256": "f8f12e1f3db70160a11ee82f9c6bffb994e46b2aae826cfcbdd23fd16dfde632",
+  "artefact_dir": "models/study/artefacts/f8f12e1f3db7",
+  "n_features": 1533232,
+  "fit_seconds": 30.32
+}

@@ -1,0 +1,22 @@
+{
+  "candidate_id": "linsvc_uni_8k",
+  "role": "training-set size comparison",
+  "config": {
+    "cleaning": "legacy-v1",
+    "ngram_range": [
+      1,
+      1
+    ],
+    "min_df": 1,
+    "estimator": "linear_svc",
+    "C": 0.125
+  },
+  "training_set": "historical-8k",
+  "training_ids_sha256": "235f8aba80504637d6ef0e1eb8d039f7f94d82dc0a217d8ab94639783a8e6a1d",
+  "n_train": 8000,
+  "model_version": "4d603bf7b6df",
+  "artefact_sha256": "4d603bf7b6df2a90469e4c1f12892caa505371423130e74d7ab959a3e893dd72",
+  "artefact_dir": "models/study/artefacts/4d603bf7b6df",
+  "n_features": 59770,
+  "fit_seconds": 2.3
+}

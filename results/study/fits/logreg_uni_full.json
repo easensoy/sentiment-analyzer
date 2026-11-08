@@ -1,0 +1,22 @@
+{
+  "candidate_id": "logreg_uni_full",
+  "role": "estimator comparison",
+  "config": {
+    "cleaning": "legacy-v1",
+    "ngram_range": [
+      1,
+      1
+    ],
+    "min_df": 1,
+    "estimator": "logreg",
+    "C": 2.0
+  },
+  "training_set": "full",
+  "training_ids_sha256": "dcee790a2bb7cdf5d645d4dac51943da746730a164767b0076a9cb3ab34f938f",
+  "n_train": 25000,
+  "model_version": "d76d04e8d014",
+  "artefact_sha256": "d76d04e8d0140a9426c34ef7188ca932267141e29eb475b907da42a7f36c5d46",
+  "artefact_dir": "models/study/artefacts/d76d04e8d014",
+  "n_features": 108635,
+  "fit_seconds": 8.15
+}

@@ -1,0 +1,22 @@
+{
+  "candidate_id": "linsvc_bi_full",
+  "role": "feature comparison",
+  "config": {
+    "cleaning": "legacy-v1",
+    "ngram_range": [
+      1,
+      2
+    ],
+    "min_df": 1,
+    "estimator": "linear_svc",
+    "C": 1.0
+  },
+  "training_set": "full",
+  "training_ids_sha256": "dcee790a2bb7cdf5d645d4dac51943da746730a164767b0076a9cb3ab34f938f",
+  "n_train": 25000,
+  "model_version": "1c3a1a88184f",
+  "artefact_sha256": "1c3a1a88184fd3bfb61736cb94f9d6cf5581e9f145915bb50a56eb152bf4600b",
+  "artefact_dir": "models/study/artefacts/1c3a1a88184f",
+  "n_features": 1594660,
+  "fit_seconds": 29.98
+}
