@@ -15,6 +15,13 @@ logger = logging.getLogger(__name__)
 
 MODEL_DIR = Path(__file__).resolve().parent.parent / "models"
 MAX_TEXT_CHARS = 20_000  # the longest IMDB review is about 13,700 characters
+# Same shape as FastAPI's own validation errors, so clients can handle every 422 alike.
+NO_KNOWN_WORDS = {
+    "type": "no_recognized_vocabulary",
+    "loc": ["body", "text"],
+    "msg": "Text contains no recognized vocabulary: none of its words are in the model's training "
+           "vocabulary (single letters never are), so there is nothing to score",
+}
 
 model = SentimentModel()
 preprocessor = TextPreprocessor()
@@ -62,19 +69,38 @@ class TextInput(BaseModel):
 class Prediction(BaseModel):
     label: Literal["negative", "positive"]
     sentiment: int = Field(description="0 = negative, 1 = positive; kept for existing clients")
-    margin: float = Field(description="Signed SVM decision value: above 0 means positive. A distance, not a probability")
+    margin: float = Field(description="The linear SVM's signed decision score, at full precision. Above 0 is "
+                                      "positive; 0 or below is negative. Not a probability")
     model_version: str = Field(description="First 12 hex characters of the SHA-256 of the loaded model files")
+
+
+def prediction_failed() -> HTTPException:
+    logger.exception("prediction failed")
+    return HTTPException(status_code=500, detail="Prediction failed")
 
 
 @app.post("/predict", response_model=Prediction)
 def predict_sentiment(input_data: TextInput) -> Prediction:
+    """Classify an English review.
+
+    The label comes from the linear SVM's signed decision score, which is returned at full
+    precision: above 0 is positive, and 0 or below is negative. The score is not a probability.
+
+    Returns 422 when the text is empty, longer than 20,000 characters or has no English letters,
+    and when none of its words are in the model's vocabulary (a single letter, or only unseen
+    words), because then there is nothing to score.
+    """
     # A plain def, so FastAPI runs the CPU-bound scoring in a worker thread instead of on the event loop.
     try:
         features = preprocessor.transform([input_data.text])
-        sentiment = int(model.predict(features)[0])
-        margin = float(model.decision_function(features)[0])
     except Exception:
-        logger.exception("prediction failed")
-        raise HTTPException(status_code=500, detail="Prediction failed")
-    return Prediction(label=LABELS[sentiment], sentiment=sentiment, margin=round(margin, 4),
+        raise prediction_failed()
+    if features.nnz == 0:
+        raise HTTPException(status_code=422, detail=[NO_KNOWN_WORDS])
+    try:
+        labels, scores = model.predict_with_scores(features)  # one decision-function call
+    except Exception:
+        raise prediction_failed()
+    sentiment = int(labels[0])
+    return Prediction(label=LABELS[sentiment], sentiment=sentiment, margin=float(scores[0]),
                       model_version=model_version)

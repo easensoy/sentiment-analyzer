@@ -110,7 +110,7 @@ def compose(shots):
     draw = ImageDraw.Draw(sheet)
     draw.text((margin, margin), "FastAPI /docs answering four example reviews", font=title, fill=INK)
     draw.text((margin, margin + 64), "POST /predict in Swagger UI, served by uvicorn from src.api:app; each answer "
-              "gives the label, the 0/1 sentiment and the SVM margin (a distance, not a probability)",
+              "gives the label, the 0/1 sentiment and the linear SVM's signed decision score (not a probability)",
               font=subtitle, fill=INK_2)
     y = margin + head_h
     for row, row_h in zip(rows, row_heights):

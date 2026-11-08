@@ -13,12 +13,20 @@ class SentimentModel:
         self.model.fit(X, y)
 
     def predict(self, X):
-        # The margin's sign decides, so a label can never contradict its margin; libsvm's own
-        # predict sends an exact tie (margin 0) the other way. A tie counts as negative here.
-        return self.model.classes_[(self.decision_function(X) > 0).astype(int)]
+        return self.predict_with_scores(X)[0]
+
+    def predict_with_scores(self, X):
+        """Labels and signed decision scores from a single decision_function call.
+
+        Application policy: a score above 0 is positive; a score of 0 or below is negative.
+        SVC.predict follows libsvm's own convention for an exact tie, which need not match
+        this policy, so the label is derived from the score here and always agrees with it.
+        """
+        scores = self.decision_function(X)
+        return self.model.classes_[(scores > 0).astype(int)], scores
 
     def decision_function(self, X):
-        """Signed distance from the SVM's separating hyperplane: above 0 means positive. Not a probability."""
+        """The linear SVM's signed decision score for each row: above 0 leans positive. Not a probability."""
         return self.model.decision_function(X)
 
     def save(self, filepath):
