@@ -6,7 +6,8 @@ import numpy as np
 import pytest
 import sklearn
 
-from src.pipeline import (ArtefactError, build_pipeline, labels_from_scores, load, load_artefact, publish)
+from src.pipeline import (ArtefactError, build_pipeline, file_sha256, labels_from_scores, load, load_artefact,
+                          publish)
 from tests.conftest import CONFIG, NEGATIVE, POSITIVE
 
 TEXTS = ["a brilliant film", "a boring film", "words it never saw", "a wonderful<br />story"]
@@ -79,17 +80,19 @@ def test_a_pipeline_whose_cleaning_differs_from_its_config_is_rejected(tmp_path,
         publish(tiny_pipeline, tmp_path, candidate_id="x", config={**CONFIG, "cleaning": "v2"}, training={})
 
 
-def test_wrong_classes_or_feature_width_are_rejected(model_dir):
+def test_unexpected_classes_are_rejected_even_with_a_consistent_manifest(model_dir):
     path = manifest_path(model_dir).parent / "pipeline.joblib"
     pipeline = joblib.load(path)
     pipeline.named_steps["clf"].classes_ = np.array([1, 2])
     joblib.dump(pipeline, path)
-    manifest = json.loads(manifest_path(model_dir).read_text(encoding="utf-8"))
-    from src.pipeline import file_sha256
-    digest = file_sha256(path)
+    digest = file_sha256(path)  # re-sign the artefact, so only the class check can fail
     edit_manifest(model_dir, artefact_sha256=digest, model_version=digest[:12])
     with pytest.raises(ArtefactError, match="classes"):
         load(model_dir)
+
+
+def test_the_manifest_records_this_environment(model_dir):
+    _, manifest = load(model_dir)
     assert manifest["environment"]["scikit-learn"] == sklearn.__version__
 
 
