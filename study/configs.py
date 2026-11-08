@@ -62,9 +62,10 @@ def comparisons(sel: dict | None = None) -> list[dict]:
     """Pre-specified paired comparisons: (candidate A minus candidate B) and the factor that differs."""
     sel = sel or selection()
     b = short(sel["branch_estimator"])
+    name = {"linear_svc": "LinearSVC", "logreg": "LogisticRegression"}[sel["branch_estimator"]]
     return [
         {"id": "size_svc", "a": "svc_uni_full", "b": "svc_uni_8k_historical", "factor": "training-set size (SVC, C=1)"},
-        {"id": f"size_{b}", "a": f"{b}_uni_full", "b": f"{b}_uni_8k", "factor": f"training-set size ({b})"},
+        {"id": f"size_{b}", "a": f"{b}_uni_full", "b": f"{b}_uni_8k", "factor": f"training-set size ({name}, same C)"},
         {"id": "estimator_linsvc_vs_logreg", "a": "linsvc_uni_full", "b": "logreg_uni_full",
          "factor": "estimator (both C-tuned on development folds)"},
         {"id": "estimator_svc_vs_linsvc", "a": "svc_uni_full", "b": "linsvc_uni_full",
