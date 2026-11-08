@@ -67,7 +67,9 @@ What limits these numbers:
 ### Errors by review length
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="visual_outputs/07_error_by_length_dark.png">
+  <source media="(min-width: 960px) and (prefers-color-scheme: dark)" srcset="visual_outputs/07_error_by_length_dark.png">
+  <source media="(max-width: 959px) and (prefers-color-scheme: dark)" srcset="visual_outputs/07_error_by_length_narrow_dark.png" width="360">
+  <source media="(max-width: 959px)" srcset="visual_outputs/07_error_by_length_narrow_light.png" width="360">
   <img src="visual_outputs/07_error_by_length_light.png" width="830" alt="Error rate with 95% intervals by review-length quarter and true class. Negative reviews: 15.3% for 26 to 125 words, 11.8% for 126 to 170, 15.4% for 171 to 282, 13.4% for 283 to 1,269, and 13.9% overall. Positive reviews: 7.3%, 5.6%, 9.5% and 6.9%, and 7.4% overall. Negative reviews are higher in every quarter, with no clear trend by length.">
 </picture>
 
@@ -76,7 +78,9 @@ The quarters split the 2,000 held-out reviews by word count (whitespace tokens, 
 ### One wrong prediction, decomposed
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="visual_outputs/08_score_contributions_dark.png">
+  <source media="(min-width: 960px) and (prefers-color-scheme: dark)" srcset="visual_outputs/08_score_contributions_dark.png">
+  <source media="(max-width: 959px) and (prefers-color-scheme: dark)" srcset="visual_outputs/08_score_contributions_narrow_dark.png" width="360">
+  <source media="(max-width: 959px)" srcset="visual_outputs/08_score_contributions_narrow_light.png" width="360">
   <img src="visual_outputs/08_score_contributions_light.png" width="830" alt="Waterfall of the contributions to the score of 'The movie was not good.': good +0.850, not −0.295, was −0.270, the +0.152, movie −0.138, no other terms, intercept +0.002. They sum to +0.301, which is above 0, so the label is positive.">
 </picture>
 

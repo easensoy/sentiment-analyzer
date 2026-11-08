@@ -25,7 +25,7 @@ The held-out reviews are a stratified random 20% (seed 42) of a 10,000-review sa
 
 ## Error analysis behind the README figures
 
-The figures come from `scripts/make_readme_figures.py`, which writes each one in a light and a dark version (figure 06 also in a narrow layout for phone screens), the numbers behind it as CSV, and [`figures_provenance.json`](figures_provenance.json). That file records the commit the figures were made from, the SHA-256 of every input, the model version (`98bcdfb288fc`), the checks that passed and the library versions.
+The figures come from `scripts/make_readme_figures.py`, which writes each one in a light and a dark version, both at full width and in a narrow layout for phone screens, the numbers behind it as CSV, and [`figures_provenance.json`](figures_provenance.json). That file records the commit the figures were made from, the SHA-256 of every input, the model version (`98bcdfb288fc`), the checks that passed and the library versions.
 
 ### Hand-written probes (figure 06)
 
@@ -49,7 +49,9 @@ These are illustrations, not an evaluation: five sentences written by hand, wher
 ### Error rate by review length (figure 07)
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="07_error_by_length_dark.png">
+  <source media="(min-width: 960px) and (prefers-color-scheme: dark)" srcset="07_error_by_length_dark.png">
+  <source media="(max-width: 959px) and (prefers-color-scheme: dark)" srcset="07_error_by_length_narrow_dark.png" width="360">
+  <source media="(max-width: 959px)" srcset="07_error_by_length_narrow_light.png" width="360">
   <img src="07_error_by_length_light.png" width="830" alt="Error rate by length quarter and true class with 95% intervals; negative reviews are higher in every quarter, with no clear length trend.">
 </picture>
 
@@ -68,7 +70,9 @@ Reading: negative reviews have the higher error rate in every quarter, and neith
 ### One score, decomposed (figure 08)
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="08_score_contributions_dark.png">
+  <source media="(min-width: 960px) and (prefers-color-scheme: dark)" srcset="08_score_contributions_dark.png">
+  <source media="(max-width: 959px) and (prefers-color-scheme: dark)" srcset="08_score_contributions_narrow_dark.png" width="360">
+  <source media="(max-width: 959px)" srcset="08_score_contributions_narrow_light.png" width="360">
   <img src="08_score_contributions_light.png" width="830" alt="Contributions to the score of 'The movie was not good.': good +0.850, not −0.295, was −0.270, the +0.152, movie −0.138, intercept +0.002, total +0.301.">
 </picture>
 

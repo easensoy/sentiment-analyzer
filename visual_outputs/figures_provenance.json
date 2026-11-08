@@ -1,9 +1,9 @@
 {
   "generated_by": "scripts/make_readme_figures.py",
-  "script_sha256": "bec90014ae98677c34bd591341c1b454bbdb64992cf0c7b9c1bc971cb1cefa36",
-  "generated_utc": "2026-11-08T12:00:06Z",
+  "script_sha256": "e196c772a9e96709f4ed2fd19edba710cdd47744b9e200d2f6fdc4c8c7d52747",
+  "generated_utc": "2026-11-08T12:31:38Z",
   "git": {
-    "commit": "f469571488cb646417be9cc88ab9e7a52cafd094",
+    "commit": "bc2b082a6a920dc1727f766f3990da210bf27439",
     "sources": [
       "scripts/make_readme_figures.py",
       "src",
@@ -50,7 +50,8 @@
         "data/training_data.csv"
       ],
       "binning": "quartiles of whitespace word count over all 2,000 held-out reviews (pandas.qcut, both classes pooled)",
-      "interval": "95% Wilson score interval per cell; treats reviews as independent"
+      "interval": "95% Wilson score interval per cell; treats reviews as independent",
+      "narrow_layout": "07_error_by_length_narrow_{light,dark}.png: the same data, 360 CSS px wide at 3x, for README columns on viewports below 960 px"
     },
     "08_score_contributions": {
       "data": "08_score_contributions.csv",
@@ -59,7 +60,8 @@
         "models/preprocessor.joblib"
       ],
       "text": "The movie was not good.",
-      "method": "contribution = SVM weight x TF-IDF value; plus intercept; terms beyond the largest 8 summed as other terms"
+      "method": "contribution = SVM weight x TF-IDF value; plus intercept; terms beyond the largest 8 summed as other terms",
+      "narrow_layout": "08_score_contributions_narrow_{light,dark}.png: the same data, 360 CSS px wide at 3x, for README columns on viewports below 960 px"
     }
   },
   "environment": {
