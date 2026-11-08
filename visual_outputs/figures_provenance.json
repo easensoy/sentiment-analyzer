@@ -1,0 +1,72 @@
+{
+  "generated_by": "scripts/make_readme_figures.py",
+  "script_sha256": "5af6e028435cb5bc69b2e631d4399066b1162276cc5527758e2a22b646889c90",
+  "generated_utc": "2026-11-08T11:27:09Z",
+  "git": {
+    "commit": "1e8144e0e8021f2251e47ce57532cd086970f3e3",
+    "sources": [
+      "scripts/make_readme_figures.py",
+      "src",
+      "train.py",
+      "data/training_data.csv"
+    ],
+    "sources_match_commit": true
+  },
+  "model_version": "98bcdfb288fc",
+  "inputs_sha256": {
+    "models/model.joblib": "6935b3a8666b7b23d7055a9f702c9198048d803cc9a58f9eeb14beb55a02de12",
+    "models/preprocessor.joblib": "1bbbf5b5c6a3b2a144146b6b7698c6422dee67aec44a05ccce220bd5cacfa986",
+    "models/metrics.json": "dd83110deaaa6cd85320f97bccd0cf3cb2e8060dec2293b9fd5d7ace3dc09076",
+    "models/test_predictions.csv": "6c9e963064218778336562a35a49676e8c88802e447fcaa098f60db296747b5c",
+    "data/training_data.csv": "8fb8336956d04b74f4760d2f3fcb50700ebea8d117eee912a7ee4a20a162aea2"
+  },
+  "sha256_note": "text files (.csv, .json, .py) are hashed with CRLF read as LF; model_version hashes the raw bytes of the two model files, as the API does",
+  "checks_passed": [
+    "seeded split (seed, test_size from metrics.json) reproduces test_predictions.csv row for row",
+    "saved model reproduces all 2,000 saved held-out predictions",
+    "recomputed accuracy and confusion matrix equal metrics.json",
+    "figure 08 components sum to the model's decision score (absolute difference 3.2e-14)"
+  ],
+  "figures": {
+    "06_probe_outputs": {
+      "data": "06_probe_outputs.csv",
+      "derived_from": [
+        "models/model.joblib",
+        "models/preprocessor.joblib",
+        "PROBES in the script"
+      ],
+      "note": "hand-written probes; expected = the sentiment each was written to express"
+    },
+    "07_error_by_length": {
+      "data": "07_error_by_length.csv",
+      "derived_from": [
+        "models/test_predictions.csv (text, true label, prediction)"
+      ],
+      "verified_against": [
+        "models/model.joblib",
+        "models/preprocessor.joblib",
+        "models/metrics.json",
+        "data/training_data.csv"
+      ],
+      "binning": "quartiles of whitespace word count over all 2,000 held-out reviews (pandas.qcut, both classes pooled)",
+      "interval": "95% Wilson score interval per cell; treats reviews as independent"
+    },
+    "08_score_contributions": {
+      "data": "08_score_contributions.csv",
+      "derived_from": [
+        "models/model.joblib",
+        "models/preprocessor.joblib"
+      ],
+      "text": "The movie was not good.",
+      "method": "contribution = SVM weight x TF-IDF value; plus intercept; terms beyond the largest 8 summed as other terms"
+    }
+  },
+  "environment": {
+    "python": "3.15.2",
+    "numpy": "2.5.4",
+    "pandas": "3.1.1",
+    "scikit-learn": "1.9.1",
+    "matplotlib": "3.11.2",
+    "font": "Segoe UI"
+  }
+}
