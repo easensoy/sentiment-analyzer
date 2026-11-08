@@ -1,0 +1,22 @@
+{
+  "candidate_id": "svc_uni_8k_historical",
+  "role": "the historical model (artefact re-fitted by train.py, parameter-identical)",
+  "config": {
+    "cleaning": "legacy-v1",
+    "ngram_range": [
+      1,
+      1
+    ],
+    "min_df": 1,
+    "estimator": "svc",
+    "C": 1.0
+  },
+  "training_set": "historical-8k",
+  "model_version": "9e34bdd2005c",
+  "artefact_sha256": "9e34bdd2005ce34f1c9e3c3a46b1611ce802ce8ce66e87579b9dc50b3beaa541",
+  "artefact_dir": "models/artefacts/9e34bdd2005c",
+  "training_ids_sha256": "235f8aba80504637d6ef0e1eb8d039f7f94d82dc0a217d8ab94639783a8e6a1d",
+  "n_train": 8000,
+  "fit_seconds": 74.0,
+  "fit_note": "historical artefact published by train.py (fitted on data/training_data.csv rows)"
+}
