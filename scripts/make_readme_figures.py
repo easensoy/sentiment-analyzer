@@ -12,6 +12,7 @@ metrics.json, and the decomposed score must add up to the model's own score. Any
 stops the script. Writes to visual_outputs/:
 
     06_probe_outputs_{light,dark}.png        five hand-written probes: expected, predicted, signed decision score
+    06_probe_outputs_narrow_{light,dark}.png the same figure stacked for phone-width README columns
     07_error_by_length_{light,dark}.png      held-out error rate by review length and true class
     08_score_contributions_{light,dark}.png  one decision score split into weight x TF-IDF terms and the intercept
     06_probe_outputs.csv, 07_error_by_length.csv, 08_score_contributions.csv   the numbers behind each figure
@@ -58,6 +59,10 @@ WIDTH = 830  # CSS px: the README column on github.com in a desktop browser
 SCALE = 2  # device px per CSS px, so text stays sharp on high-density screens
 DPI = 96 * SCALE  # 1 CSS px = 1/96 in, so 10 pt text is 13.3 CSS px
 TITLE, BODY, SMALL = 13, 10, 9  # pt: 17.3, 13.3 and 12 CSS px
+# Figure 06 also comes stacked for narrow README columns. The README shows it below a 960 px viewport:
+# GitHub's column is 254-364 px on phones and 406-538 px on 768-959 px screens, where its sidebar returns.
+NARROW = 360  # CSS px; the README caps it at this width
+NARROW_SCALE = 3  # device px per CSS px; most phones have 3x screens
 # Segoe UI matches make_visuals.py and covers every glyph used here; DejaVu Sans ships with matplotlib.
 FONT = ["Segoe UI" if "Segoe UI" in {f.name for f in font_manager.fontManager.ttflist} else "DejaVu Sans"]
 
@@ -202,19 +207,21 @@ def signed(v, digits=2):
 class Canvas:
     """One figure in CSS px with the origin at the top left, so layout reads like a web page."""
 
-    def __init__(self, height, theme):
+    def __init__(self, height, theme, width=WIDTH, scale=SCALE):
         self.c = THEMES[theme]
-        self.height = height
-        self.fig = plt.figure(figsize=(WIDTH / 96, height / 96), dpi=DPI)
+        self.width, self.height, self.dpi = width, height, 96 * scale
+        self.fig = plt.figure(figsize=(width / 96, height / 96), dpi=self.dpi)
         self.fig.patch.set_facecolor(self.c["surface"])
         self.ax = self.fig.add_axes((0, 0, 1, 1))
-        self.ax.set_xlim(0, WIDTH)
+        self.ax.set_xlim(0, width)
         self.ax.set_ylim(height, 0)
         self.ax.set_axis_off()
 
     def text(self, x, y, s, size=BODY, color="ink", weight="normal", ha="left", z=5, knockout=False):
-        """Text whose baseline sits at y; `knockout` clears the lines behind it with the surface colour."""
-        box = {"facecolor": self.c["surface"], "edgecolor": "none", "pad": 1.5} if knockout else None
+        """Text whose baseline sits at y; `knockout` clears the lines behind it with the surface colour,
+        or with the named theme colour (such as "band") when it is a string."""
+        fill = self.c[knockout] if isinstance(knockout, str) else self.c["surface"]
+        box = {"facecolor": fill, "edgecolor": "none", "pad": 1.5} if knockout else None
         self.ax.text(x, y, s, fontsize=size, color=self.c[color], fontweight=weight, family=FONT, ha=ha,
                      va="baseline", zorder=z, parse_math=False, bbox=box)
 
@@ -222,7 +229,7 @@ class Canvas:
         """Question-led title and a wrapped subtitle; returns the y below them."""
         self.text(16, 27, title, size=TITLE, weight="semibold")
         y = 50
-        for line in wrap(subtitle, WIDTH - 32, SMALL):
+        for line in wrap(subtitle, self.width - 32, SMALL):
             self.text(16, y, line, size=SMALL, color="ink2")
             y += 17
         return y
@@ -258,7 +265,7 @@ class Canvas:
 
     def save(self, name):
         path = OUT / name
-        self.fig.savefig(path, dpi=DPI, facecolor=self.c["surface"], metadata={"Software": None})
+        self.fig.savefig(path, dpi=self.dpi, facecolor=self.c["surface"], metadata={"Software": None})
         plt.close(self.fig)
         return path
 
@@ -311,6 +318,80 @@ def draw_probes(probes, version, theme):
         cv.text(sx(row.decision_score) + 10, base, signed(row.decision_score), size=SMALL)
         y += h
         cv.line([16, WIDTH - 16], [y, y])
+    return cv
+
+
+def draw_probes_narrow(probes, version, theme):
+    """Figure 06 for a phone-width column: each probe's text, then its labels, then its score on a strip."""
+    m, line_h, pad = 8, 18, 8
+    right = NARROW - m
+    lo, hi = -4.3, 2.0  # the wide figure's score range
+    ax0, ax1 = m + 6, right - 16  # +2 sits far enough right that +1.12's value label clears its tick
+
+    def sx(v):
+        return ax0 + (v - lo) / (hi - lo) * (ax1 - ax0)
+
+    title = wrap("How does the model score five hand-written reviews?", right - m, TITLE, "semibold")
+    subtitle = wrap(f"Scored by the saved model ({version}). Expected is what each sentence was written to "
+                    "express, not a dataset label.", right - m, SMALL)
+    note = [line for sentence in ("Label rule: above 0 is positive; 0 or below is negative.",
+                                  "The score is not a probability.") for line in wrap(sentence, right - m, SMALL)]
+    texts = [wrap(f"“{t}”", right - m, BODY) for t in probes["text"]]
+    heights = [pad + 13 + (len(lines) - 1) * line_h + 20 + 17 + 8 + pad for lines in texts]
+    top = 22 + 21 * (len(title) - 1) + 20 + 16 * (len(subtitle) - 1) + 14
+    bottom = top + sum(heights)
+    cv = Canvas(bottom + 56 + 16 * (len(note) - 1) + 12, theme, width=NARROW, scale=NARROW_SCALE)
+
+    y = 22
+    for line in title:
+        cv.text(m, y, line, size=TITLE, weight="semibold")
+        y += 21
+    y -= 1  # the subtitle starts 20 px below the title's last baseline
+    for line in subtitle:
+        cv.text(m, y, line, size=SMALL, color="ink2")
+        y += 16
+
+    y = top
+    cv.line([m, right], [y, y])
+    for lines, h, row in zip(texts, heights, probes.itertuples()):
+        if not row.correct:
+            cv.band(m, y, right - m, h)
+        base = y + pad + 13
+        for i, line in enumerate(lines):
+            cv.text(m, base + i * line_h, line)
+        labels = base + (len(lines) - 1) * line_h + 20
+        x = m
+        for caption, cls in (("expected", row.expected), ("predicted", row.predicted)):
+            cv.text(x, labels, caption, size=SMALL, color="ink2")
+            x += text_width(caption, SMALL) + 7
+            cv.marker(x + 4.5, labels - 4, cls, size=9)
+            x += 13
+            cv.text(x, labels, cls, size=SMALL)
+            x += text_width(cls, SMALL) + 16
+        if row.correct:
+            cv.text(right, labels, "correct", size=SMALL, color="ink2", ha="right")
+        else:
+            cv.text(right, labels, "wrong", size=SMALL, weight="semibold", ha="right")
+        mid = labels + 17  # centre of this probe's score strip
+        cv.line([ax0, ax1], [mid, mid])
+        for v in (-4, -2, 2):
+            cv.line([sx(v)] * 2, [mid - 2.5, mid + 2.5])
+        cv.line([sx(0)] * 2, [mid - 7, mid + 7], color="axis")  # the decision boundary
+        cv.marker(sx(row.decision_score), mid, row.predicted, size=10)
+        cv.text(sx(row.decision_score) + 9, mid + 4, signed(row.decision_score), size=SMALL,
+                knockout=True if row.correct else "band")  # clear the track behind the value
+        y += h
+        cv.line([m, right], [y, y])
+
+    for v in (-4, -2, 0, 2):
+        cv.line([sx(v)] * 2, [bottom, bottom + 4], color="axis")
+        cv.text(sx(v), bottom + 18, signed(v, 0) if v else "0", size=SMALL, color="ink2", ha="center")
+    cv.text(sx(0) - 7, bottom + 34, "← negative", size=SMALL, color="ink2", ha="right")
+    cv.text(sx(0) + 7, bottom + 34, "positive →", size=SMALL, color="ink2")
+    y = bottom + 56
+    for line in note:
+        cv.text(m, y, line, size=SMALL, color="ink2")
+        y += 16
     return cv
 
 
@@ -480,6 +561,7 @@ def main() -> None:
     written = []
     for theme in THEMES:
         written.append(draw_probes(probes, version, theme).save(f"06_probe_outputs_{theme}.png"))
+        written.append(draw_probes_narrow(probes, version, theme).save(f"06_probe_outputs_narrow_{theme}.png"))
         written.append(draw_length(length, theme).save(f"07_error_by_length_{theme}.png"))
         written.append(draw_contributions(parts, PROBES[EXPLAINED][1], n_terms, theme)
                        .save(f"08_score_contributions_{theme}.png"))
@@ -503,7 +585,10 @@ def main() -> None:
         ],
         "figures": {
             "06_probe_outputs": {"data": "06_probe_outputs.csv", "derived_from": model_files + ["PROBES in the script"],
-                                 "note": "hand-written probes; expected = the sentiment each was written to express"},
+                                 "note": "hand-written probes; expected = the sentiment each was written to express",
+                                 "narrow_layout": f"06_probe_outputs_narrow_{{light,dark}}.png: the same data, "
+                                                  f"{NARROW} CSS px wide at {NARROW_SCALE}x, for README columns "
+                                                  "on viewports below 960 px"},
             "07_error_by_length": {"data": "07_error_by_length.csv",
                                    "derived_from": ["models/test_predictions.csv (text, true label, prediction)"],
                                    "verified_against": [name for name in inputs if name != "models/test_predictions.csv"],
