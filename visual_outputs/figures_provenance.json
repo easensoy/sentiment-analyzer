@@ -1,38 +1,39 @@
 {
   "generated_by": "scripts/make_readme_figures.py",
-  "script_sha256": "e196c772a9e96709f4ed2fd19edba710cdd47744b9e200d2f6fdc4c8c7d52747",
-  "generated_utc": "2026-11-08T12:31:38Z",
+  "script_sha256": "7521cd222351f1f2898e8cf054e7283b17f2f8b795b5a4407dd016ee5eba1236",
+  "generated_utc": "2026-11-08T19:57:14Z",
   "git": {
-    "commit": "bc2b082a6a920dc1727f766f3990da210bf27439",
+    "commit": "125e99be01035d723a9efd7a4af8a446f19fa14f",
     "sources": [
       "scripts/make_readme_figures.py",
       "src",
       "train.py",
-      "data/training_data.csv"
+      "data/training_data.csv",
+      "results/historical/metrics.json"
     ],
     "sources_match_commit": true
   },
-  "model_version": "98bcdfb288fc",
+  "model_version": "9e34bdd2005c",
   "inputs_sha256": {
-    "models/model.joblib": "6935b3a8666b7b23d7055a9f702c9198048d803cc9a58f9eeb14beb55a02de12",
-    "models/preprocessor.joblib": "1bbbf5b5c6a3b2a144146b6b7698c6422dee67aec44a05ccce220bd5cacfa986",
-    "models/metrics.json": "dd83110deaaa6cd85320f97bccd0cf3cb2e8060dec2293b9fd5d7ace3dc09076",
-    "models/test_predictions.csv": "6c9e963064218778336562a35a49676e8c88802e447fcaa098f60db296747b5c",
+    "models/artefacts/9e34bdd2005c/pipeline.joblib": "9e34bdd2005ce34f1c9e3c3a46b1611ce802ce8ce66e87579b9dc50b3beaa541",
+    "results/historical/metrics.json": "dd83110deaaa6cd85320f97bccd0cf3cb2e8060dec2293b9fd5d7ace3dc09076",
+    "models/test_predictions.csv": "11f1c55fd8a33ecffcc6c30c2c868dbb00a6cd9822d5e27058821e9dea1aea28",
     "data/training_data.csv": "8fb8336956d04b74f4760d2f3fcb50700ebea8d117eee912a7ee4a20a162aea2"
   },
-  "sha256_note": "text files (.csv, .json, .py) are hashed with CRLF read as LF; model_version hashes the raw bytes of the two model files, as the API does",
+  "sha256_note": "text files (.csv, .json, .py) are hashed with CRLF read as LF; model_version is the first 12 hex characters of the Pipeline artefact's SHA-256, as the API reports it",
+  "legacy_model_version": "98bcdfb288fc",
+  "legacy_equivalence": "results/historical/refit_equivalence.json: parameters identical to the original two-file artefact",
   "checks_passed": [
     "seeded split (seed, test_size from metrics.json) reproduces test_predictions.csv row for row",
     "saved model reproduces all 2,000 saved held-out predictions",
-    "recomputed accuracy and confusion matrix equal metrics.json",
+    "recomputed accuracy and confusion matrix equal results/historical/metrics.json",
     "figure 08 components sum to the model's decision score (absolute difference 3.2e-14)"
   ],
   "figures": {
     "06_probe_outputs": {
       "data": "06_probe_outputs.csv",
       "derived_from": [
-        "models/model.joblib",
-        "models/preprocessor.joblib",
+        "models/artefacts/9e34bdd2005c/pipeline.joblib",
         "PROBES in the script"
       ],
       "note": "hand-written probes; expected = the sentiment each was written to express",
@@ -44,9 +45,8 @@
         "models/test_predictions.csv (text, true label, prediction)"
       ],
       "verified_against": [
-        "models/model.joblib",
-        "models/preprocessor.joblib",
-        "models/metrics.json",
+        "models/artefacts/9e34bdd2005c/pipeline.joblib",
+        "results/historical/metrics.json",
         "data/training_data.csv"
       ],
       "binning": "quartiles of whitespace word count over all 2,000 held-out reviews (pandas.qcut, both classes pooled)",
@@ -56,8 +56,7 @@
     "08_score_contributions": {
       "data": "08_score_contributions.csv",
       "derived_from": [
-        "models/model.joblib",
-        "models/preprocessor.joblib"
+        "models/artefacts/9e34bdd2005c/pipeline.joblib"
       ],
       "text": "The movie was not good.",
       "method": "contribution = SVM weight x TF-IDF value; plus intercept; terms beyond the largest 8 summed as other terms",
