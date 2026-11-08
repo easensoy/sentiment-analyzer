@@ -1,0 +1,5 @@
+Classify the sentiment of this movie review.
+
+<review>
+{review}
+</review>

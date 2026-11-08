@@ -1,0 +1,11 @@
+{
+  "type": "object",
+  "properties": {
+    "label": {
+      "type": "string",
+      "enum": ["negative", "positive"]
+    }
+  },
+  "required": ["label"],
+  "additionalProperties": false
+}
