@@ -1,6 +1,6 @@
-# Sentiment analyzer: end-to-end run report
+# Historical model: run report (internal-holdout protocol)
 
-Updated 2026-11-08 · `easensoy/sentiment-analyzer` on `main` · CPython 3.15.2 in a uv `.venv`. This covers the end-to-end run of 2026-11-06, the fixes that followed an outside review, and the error analysis behind the README figures. The [README](../README.md) has the short version.
+Updated 2026-11-08 · `easensoy/sentiment-analyzer` on `main` · CPython 3.15.2 in a uv `.venv`. This report documents the historical model, the end-to-end run of 2026-11-06 under its original internal-holdout protocol, the fixes that followed an outside review, and the analysis behind figures 06–08. Its numbers describe a split inside the official training partition, not the official test partition; the comparative study on the official test partition is reported in the [README](../README.md). The original metrics file is archived unchanged in [`results/historical/metrics.json`](../results/historical/metrics.json).
 
 ## Result on the held-out split (2,000 reviews, 1,000 per class)
 
@@ -14,18 +14,18 @@ The model leans positive: 139 of 1,000 negative reviews were predicted positive 
 
 The held-out reviews are a stratified random 20% (seed 42) of a 10,000-review sample of IMDB's train split, so reviews of the same movie can sit on both sides, and these numbers are likely optimistic. All intervals here are 95% Wilson score intervals. They treat reviews as independent and take this fitted model and split as fixed, so they cover the sampling of held-out reviews only and do not correct for the same-movie overlap.
 
-## What works now
+## Current tooling for the historical model
 
-- `python train.py` fits the TF-IDF vectoriser on the 8,000-review training split only. It then trains `SVC(kernel="linear")` (67 s on this machine; 4,727 support vectors, 59,770 terms), evaluates on the held-out 20%, and saves both fitted objects, `metrics.json` and the held-out predictions to `models/`.
-- `python -m uvicorn src.api:app` loads both files at startup and refuses to start without them.
+- `python train.py` fits one scikit-learn `Pipeline` (cleaning version `legacy-v1`, then `TfidfVectorizer()`, then `SVC(kernel="linear")`) on the 8,000-review training split only (67 s in the original run; 4,727 support vectors, 59,770 terms), evaluates on the held-out 20%, and publishes the Pipeline with a manifest under `models/artefacts/<model_version>/`, pointed to by `models/serving.json`. Re-fitting through this path reproduces the original two-file artefact parameter for parameter ([`refit_equivalence.json`](../results/historical/refit_equivalence.json)); the artefact identifier changed from `98bcdfb288fc` to `9e34bdd2005c` because the serialisation changed.
+- `python -m uvicorn src.api:app` loads the published Pipeline at startup and refuses to start if its manifest, SHA-256, schema version, classes, feature dimension or scikit-learn version do not match. `GET /model` reports the served artefact's identity.
   - `POST /predict` returns `label`, `sentiment`, `margin` (the linear SVM's signed decision score at full precision, not a probability) and `model_version`. The label comes from that same score: above 0 is positive, 0 or below is negative.
   - Invalid input gets a 422 with the reason. That includes text with no word from the model's vocabulary (a single letter, or only unseen words). An unexpected error gets a 500 without internal details.
-- `python scripts/make_readme_figures.py` re-derives the README figures from `models/` and the data. It stops unless the seeded split rebuilds the saved held-out set row for row, the saved model reproduces all 2,000 saved predictions, the recomputed accuracy and confusion matrix equal `metrics.json`, and the decomposed score adds up to the model's own score.
-- 30 tests cover cleaning, the vectoriser, the model and its score-to-label policy, saving and loading, `train.py` end to end, and the HTTP contract. CI runs them on Python 3.15 on every push to `main` and every pull request. The tests check behaviour, not model quality.
+- `python scripts/make_readme_figures.py` re-derives figures 06–08 from the published Pipeline and the data. It stops unless the seeded split rebuilds the saved held-out set row for row, the model reproduces all 2,000 saved predictions, the recomputed accuracy and confusion matrix equal the archived original metrics, and the decomposed score adds up to the model's own score.
+- The test suite covers cleaning, artefact publication and validation, the score-to-label policy, `train.py` end to end, the HTTP contract, the study's statistics and split integrity. CI runs it on Python 3.15 on every push to `main` and every pull request. The tests check behaviour, not model quality.
 
 ## Error analysis behind the README figures
 
-The figures come from `scripts/make_readme_figures.py`, which writes each one in a light and a dark version, both at full width and in a narrow layout for phone screens, the numbers behind it as CSV, and [`figures_provenance.json`](figures_provenance.json). That file records the commit the figures were made from, the SHA-256 of every input, the model version (`98bcdfb288fc`), the checks that passed and the library versions.
+The figures come from `scripts/make_readme_figures.py`, which writes each one in a light and a dark version, both at full width and in a narrow layout for phone screens, the numbers behind it as CSV, and [`figures_provenance.json`](figures_provenance.json). That file records the commit the figures were made from, the SHA-256 of every input, the model version (`9e34bdd2005c`, parameter-identical to the original `98bcdfb288fc`), the checks that passed and the library versions.
 
 ### Hand-written probes (figure 06)
 
@@ -89,7 +89,7 @@ Reading: negative reviews have the higher error rate in every quarter, and neith
 
 The SVM is linear, so its signed decision score is the intercept plus each term's weight times its TF-IDF value. The script stops if these parts differ from `decision_function` by more than 1e-9; the actual difference is about 3e-14. In this model *not* is one unigram feature with a fixed weight of −0.66, whatever word it negates. Its contribution changes only through the unit-length scaling of each review's TF-IDF vector, never through word order, so the model cannot represent what *not* applies to. Here it removes about a third of what *good* adds. Without *not*, the sentence scores +0.6650: dropping a term also rescales the other TF-IDF values, because each review's vector is normalised to unit length.
 
-This explains the score within this model, not how people read negation. Whether phrase features such as bigrams would fix negation in general is untested.
+This explains the score within this model, not how people read negation. The README's behavioural suite measures negation failures across candidates, including bigram models; those results remain provisional until the suite's labels are adjudicated.
 
 ## What was missing or broken at `0c3ec53`
 
@@ -146,11 +146,9 @@ These supporting charts come from `scripts/make_visuals.py` and are drawn for a 
 
 Example 4, "The movie was not good.", is predicted **positive**, with a small signed decision score (+0.30, rounded for display); figure 08 shows how that score is made up. `05a_fastapi_docs_page.png` is one unedited capture of the page.
 
-## Next steps
+## Status of the earlier next steps (2026-11-08)
 
-None of this exists in the repository yet. The evaluation work comes before any new modelling, and the next steps will:
-
-1. score the model on the official IMDB test split, whose movies don't overlap with train, saving per-review predictions;
-2. add majority-class, logistic-regression and `LinearSVC` baselines, with and without bigrams, trained on the same reviews so that differences in data size can't explain differences in accuracy, and report paired confidence intervals for the differences;
-3. build a hand-checked set of negation, contrast, sarcasm and intensity cases, and run the linear models and Claude on it and on the same held-out reviews, reporting accuracy, cost and latency;
-4. save one versioned `Pipeline` with a manifest, followed by a model card.
+1. Official-test evaluation with per-review predictions: done; see the README.
+2. Majority-class, logistic-regression and `LinearSVC` baselines with single-factor comparisons and paired intervals: done; see the README.
+3. Negation, contrast, sarcasm and intensity cases: a template suite exists (`behavioural/`), but no person has adjudicated its labels, so its results are provisional. The Claude baseline runner exists and is validated offline; no paid run has been made, because no spending limit has been set.
+4. One versioned `Pipeline` with a manifest: done; the model card is in the README.
