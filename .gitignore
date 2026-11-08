@@ -5,3 +5,8 @@ __pycache__/
 .coverage
 .venv/
 models/
+
+# Downloaded source data and derived tables (never committed)
+data/raw/
+data/derived/
+behavioural/adjudications*.csv
