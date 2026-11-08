@@ -1,0 +1,24 @@
+{
+  "protocol_sha256": "f9a748b142394acf82d355ba23b618857b3a97a3c8e4342f23d8b0e35ebb8ffd",
+  "lock_sha256": "89e3ae94ed5505c06005328a8867838067ee8f14c9c3e0eed581b57ccff53c4a",
+  "git_commit": "88d810245a81e985f03b6ad343e309532a9c15b1 (working tree differs)",
+  "scoring_started_utc": "2026-11-08T19:38:39Z",
+  "scoring_finished_utc": "2026-11-08T19:50:48Z",
+  "n_test_reviews": 25000,
+  "environment": {
+    "python": "3.15.2",
+    "scikit-learn": "1.9.1",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "joblib": "1.6.0"
+  },
+  "hardware": {
+    "machine": "AMD64",
+    "system": "Windows 11 (10.0.26200)",
+    "logical_cpus": 22,
+    "cpu": "Intel(R) Core(TM) Ultra 7 165H",
+    "physical_cores": 16,
+    "ram_gb": 31.5
+  },
+  "timing_note": "wall-clock in one process while no other study job ran; other software on the shared machine was not controlled; single-request latency excludes HTTP and JSON handling"
+}

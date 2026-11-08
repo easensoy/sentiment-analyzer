@@ -54,7 +54,8 @@ def table_results() -> str:
             "|---|---|---|---:|---:|---|---|---|---|"]
     for cid, spec in proto["candidates"].items():
         est, feats, c = describe(spec)
-        cell = lambda k: f"{pct(m.loc[(cid, k), 'point'])} [{interval(m.loc[(cid, k), 'lo95'], m.loc[(cid, k), 'hi95'])}]"
+        cell = lambda k: (f"{pct(m.loc[(cid, k), 'point'], 2)} [{pct(m.loc[(cid, k), 'lo95'], 2)}–"
+                          f"{pct(m.loc[(cid, k), 'hi95'], 2)}]")
         rows.append(f"| `{cid}` | {est} | {feats} | {c} | {spec['n_train']:,} | {cell('accuracy')} | {cell('macro_f1')} "
                     f"| {cell('error_negative')} | {cell('error_positive')} |")
     return "\n".join(rows)
@@ -139,10 +140,9 @@ def table_cost() -> str:
             continue
         fit = json.loads((RESULTS / "study" / "fits" / f"{cid}.json").read_text(encoding="utf-8"))
         r = inf.loc[cid]
-        n_feat = fit.get("n_features")
+        n_feat = fit.get("n_features") or json.loads(  # the historical artefact's record points at train.py's run
+            (RESULTS / "historical" / "metrics.json").read_text(encoding="utf-8"))["vocabulary_size"]
         rows.append(f"| `{cid}` | {fit['fit_seconds']:.1f} | {n_feat:,} | {r['batch_seconds']:.1f} | "
-                    f"{r['latency_ms_p50']:.2f} / {r['latency_ms_p99']:.2f} |" if n_feat else
-                    f"| `{cid}` | {fit['fit_seconds']:.1f} | — | {r['batch_seconds']:.1f} | "
                     f"{r['latency_ms_p50']:.2f} / {r['latency_ms_p99']:.2f} |")
     return "\n".join(rows)
 
