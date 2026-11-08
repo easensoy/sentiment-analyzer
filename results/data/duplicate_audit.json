@@ -1,0 +1,122 @@
+{
+  "exact_duplicates": {
+    "train": {
+      "reviews": 25000,
+      "distinct_texts": 24904,
+      "duplicate_groups": 92,
+      "reviews_in_duplicate_groups": 188,
+      "redundant_copies": 96,
+      "groups_with_conflicting_labels": 0
+    },
+    "test": {
+      "reviews": 25000,
+      "distinct_texts": 24801,
+      "duplicate_groups": 191,
+      "reviews_in_duplicate_groups": 390,
+      "redundant_copies": 199,
+      "groups_with_conflicting_labels": 0
+    },
+    "across": {
+      "distinct_texts_in_both": 123,
+      "test_reviews_whose_text_occurs_in_train": 123,
+      "of_which_label_differs_from_train_copy": 0
+    }
+  },
+  "normalised_duplicates": {
+    "train": {
+      "reviews": 25000,
+      "distinct_texts": 24901,
+      "duplicate_groups": 95,
+      "reviews_in_duplicate_groups": 194,
+      "redundant_copies": 99,
+      "groups_with_conflicting_labels": 0
+    },
+    "test": {
+      "reviews": 25000,
+      "distinct_texts": 24798,
+      "duplicate_groups": 194,
+      "reviews_in_duplicate_groups": 396,
+      "redundant_copies": 202,
+      "groups_with_conflicting_labels": 0
+    },
+    "across": {
+      "distinct_texts_in_both": 123,
+      "test_reviews_whose_text_occurs_in_train": 123,
+      "of_which_label_differs_from_train_copy": 0
+    }
+  },
+  "normalisation": "HTML entities decoded, tags removed, NFKD without combining marks, lower-cased, non-alphanumeric runs collapsed to one space",
+  "near_duplicate_screen": {
+    "method": "max cosine of each test review to any training review; sublinear TF-IDF, word 1-2 grams, min_df=2, max_df=0.5, fitted on both partitions' normalised texts (no labels)",
+    "test_reviews_at_or_above": {
+      "0.5": 133,
+      "0.7": 128,
+      "0.8": 127,
+      "0.9": 124,
+      "0.95": 124
+    },
+    "max_cosine_quantiles": {
+      "0.5": 0.061325497925281525,
+      "0.9": 0.08786550164222717,
+      "0.99": 0.16138792037963867,
+      "0.999": 1.0
+    }
+  },
+  "id_order_profile": {
+    "method": "mean cosine (sublinear TF-IDF unigrams, min_df=2, max_df=0.5, fitted per directory) between reviews whose ids differ by the lag, against random pairs from the same directory",
+    "by_directory": {
+      "test/neg": {
+        "lag_1": 0.0924,
+        "lag_2": 0.0787,
+        "lag_5": 0.0584,
+        "lag_10": 0.0459,
+        "lag_20": 0.0386,
+        "lag_30": 0.0376,
+        "lag_50": 0.0374,
+        "lag_100": 0.0373,
+        "lag_200": 0.0372,
+        "random_pairs": 0.0373
+      },
+      "test/pos": {
+        "lag_1": 0.1257,
+        "lag_2": 0.114,
+        "lag_5": 0.0887,
+        "lag_10": 0.0667,
+        "lag_20": 0.0439,
+        "lag_30": 0.0349,
+        "lag_50": 0.0349,
+        "lag_100": 0.0348,
+        "lag_200": 0.0352,
+        "random_pairs": 0.0348
+      },
+      "train/neg": {
+        "lag_1": 0.0941,
+        "lag_2": 0.0794,
+        "lag_5": 0.0592,
+        "lag_10": 0.0464,
+        "lag_20": 0.0387,
+        "lag_30": 0.0375,
+        "lag_50": 0.0378,
+        "lag_100": 0.0377,
+        "lag_200": 0.0375,
+        "random_pairs": 0.0378
+      },
+      "train/pos": {
+        "lag_1": 0.1289,
+        "lag_2": 0.1152,
+        "lag_5": 0.0896,
+        "lag_10": 0.0681,
+        "lag_20": 0.046,
+        "lag_30": 0.0353,
+        "lag_50": 0.0354,
+        "lag_100": 0.0351,
+        "lag_200": 0.0353,
+        "random_pairs": 0.0355
+      }
+    }
+  },
+  "limitations": [
+    "No movie identifiers are available, so same-movie dependence within a partition can only be approximated by contiguous id blocks.",
+    "The screen measures lexical overlap; paraphrased or translated duplicates fall outside it."
+  ]
+}

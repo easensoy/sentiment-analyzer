@@ -1,0 +1,72 @@
+{
+  "data": "data\\training_data.csv",
+  "seed": 42,
+  "test_size": 0.2,
+  "rows": {
+    "train": 8000,
+    "test": 2000
+  },
+  "class_counts": {
+    "train": {
+      "negative": 4000,
+      "positive": 4000
+    },
+    "test": {
+      "negative": 1000,
+      "positive": 1000
+    }
+  },
+  "vocabulary_size": 59770,
+  "support_vectors": 4727,
+  "train_seconds": 67.4,
+  "accuracy": 0.8935,
+  "accuracy_ci95": [
+    0.8792,
+    0.9063
+  ],
+  "accuracy_ci_method": "Wilson score interval; treats reviews as independent, so it ignores reviews of the same movie landing on both sides of the split",
+  "macro_f1": 0.8933873904311429,
+  "per_class": {
+    "negative": {
+      "precision": 0.9208556149732621,
+      "recall": 0.861,
+      "f1-score": 0.889922480620155,
+      "support": 1000.0
+    },
+    "positive": {
+      "precision": 0.8694835680751174,
+      "recall": 0.926,
+      "f1-score": 0.8968523002421307,
+      "support": 1000.0
+    },
+    "accuracy": 0.8935,
+    "macro avg": {
+      "precision": 0.8951695915241897,
+      "recall": 0.8935,
+      "f1-score": 0.8933873904311429,
+      "support": 2000.0
+    },
+    "weighted avg": {
+      "precision": 0.8951695915241897,
+      "recall": 0.8935,
+      "f1-score": 0.8933873904311429,
+      "support": 2000.0
+    }
+  },
+  "confusion_matrix": {
+    "labels": [
+      "negative",
+      "positive"
+    ],
+    "rows_true_cols_predicted": [
+      [
+        861,
+        139
+      ],
+      [
+        74,
+        926
+      ]
+    ]
+  }
+}
