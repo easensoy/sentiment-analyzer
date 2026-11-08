@@ -1,0 +1,6 @@
+probe,text,expected,predicted,decision_score,correct
+1,An absolute masterpiece: superb acting and a story I loved from start to finish.,positive,positive,1.119032472689513,True
+2,"Boring, predictable and badly acted. A total waste of two hours.",negative,negative,-3.856658002037081,True
+3,"I expected to hate it, but it turned out to be surprisingly good.",positive,positive,0.5134121595507657,True
+4,The movie was good.,positive,positive,0.6650016515901882,True
+5,The movie was not good.,negative,positive,0.3006478955393325,False
