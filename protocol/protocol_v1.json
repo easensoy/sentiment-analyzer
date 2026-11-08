@@ -1,0 +1,285 @@
+{
+  "protocol_version": 1,
+  "frozen_utc": "2026-11-08T19:37:55Z",
+  "research_question": "On the official IMDB test partition, how do TF-IDF linear classifiers differ in accuracy and class-conditional error when estimator, feature representation, cleaning version and training-set size are varied one at a time, and how does the historical model compare?",
+  "data": {
+    "fitting_and_development": "official training partition (25,000 reviews)",
+    "final_evaluation": "official test partition (25,000 reviews), scored once after this freeze",
+    "membership_file": "results/data/split_membership.csv.gz"
+  },
+  "development": {
+    "procedure": "highest mean validation accuracy over 5 grouped folds; ties to the smaller C",
+    "folds": "100-id blocks per label dealt to 5 folds (seed 42); 2,500 reviews per class per fold",
+    "selected_C": {
+      "linear_svc": {
+        "legacy-v1/uni+bigram": 1.0,
+        "legacy-v1/unigram": 0.125,
+        "v2/uni+bigram": 0.5
+      },
+      "logreg": {
+        "legacy-v1/uni+bigram": 32.0,
+        "legacy-v1/unigram": 2.0,
+        "v2/uni+bigram": 32.0
+      }
+    },
+    "branch_estimator": "linear_svc"
+  },
+  "candidates": {
+    "majority": {
+      "config": null,
+      "training_set": "full",
+      "role": "constant prediction of the training partition's majority class (ties: negative)",
+      "config_sha256": null,
+      "model_version": null,
+      "artefact_sha256": null,
+      "training_ids_sha256": "dcee790a2bb7cdf5d645d4dac51943da746730a164767b0076a9cb3ab34f938f",
+      "n_train": 25000
+    },
+    "svc_uni_8k_historical": {
+      "config": {
+        "cleaning": "legacy-v1",
+        "ngram_range": [
+          1,
+          1
+        ],
+        "min_df": 1,
+        "estimator": "svc",
+        "C": 1.0
+      },
+      "training_set": "historical-8k",
+      "role": "the historical model (artefact re-fitted by train.py, parameter-identical)",
+      "config_sha256": "566dd625db5519f0fa48cced9e19314b010ddf9302cd20a893b6115b42465d7c",
+      "model_version": "9e34bdd2005c",
+      "artefact_sha256": "9e34bdd2005ce34f1c9e3c3a46b1611ce802ce8ce66e87579b9dc50b3beaa541",
+      "training_ids_sha256": "235f8aba80504637d6ef0e1eb8d039f7f94d82dc0a217d8ab94639783a8e6a1d",
+      "n_train": 8000
+    },
+    "svc_uni_full": {
+      "config": {
+        "cleaning": "legacy-v1",
+        "ngram_range": [
+          1,
+          1
+        ],
+        "min_df": 1,
+        "estimator": "svc",
+        "C": 1.0
+      },
+      "training_set": "full",
+      "role": "historical configuration trained on the full partition",
+      "config_sha256": "566dd625db5519f0fa48cced9e19314b010ddf9302cd20a893b6115b42465d7c",
+      "model_version": "412c82d1bf10",
+      "artefact_sha256": "412c82d1bf10e17ec89feb434f988ce0121023b61f719cd63cd3cbed2b2e6653",
+      "training_ids_sha256": "dcee790a2bb7cdf5d645d4dac51943da746730a164767b0076a9cb3ab34f938f",
+      "n_train": 25000
+    },
+    "logreg_uni_full": {
+      "config": {
+        "cleaning": "legacy-v1",
+        "ngram_range": [
+          1,
+          1
+        ],
+        "min_df": 1,
+        "estimator": "logreg",
+        "C": 2.0
+      },
+      "training_set": "full",
+      "role": "estimator comparison",
+      "config_sha256": "450d42954521b1f1f5327ea7095b6085be39add304829a9a453132201494b079",
+      "model_version": "d76d04e8d014",
+      "artefact_sha256": "d76d04e8d0140a9426c34ef7188ca932267141e29eb475b907da42a7f36c5d46",
+      "training_ids_sha256": "dcee790a2bb7cdf5d645d4dac51943da746730a164767b0076a9cb3ab34f938f",
+      "n_train": 25000
+    },
+    "linsvc_uni_full": {
+      "config": {
+        "cleaning": "legacy-v1",
+        "ngram_range": [
+          1,
+          1
+        ],
+        "min_df": 1,
+        "estimator": "linear_svc",
+        "C": 0.125
+      },
+      "training_set": "full",
+      "role": "estimator comparison",
+      "config_sha256": "6950d6f7f15820389ed45aa1e5059de2869ea43b4062fe8c0b2dae2886df1117",
+      "model_version": "9f4d7de17e4f",
+      "artefact_sha256": "9f4d7de17e4ff59c2491c2ee707ef2418f5965530957a687e349b0d33c4e6134",
+      "training_ids_sha256": "dcee790a2bb7cdf5d645d4dac51943da746730a164767b0076a9cb3ab34f938f",
+      "n_train": 25000
+    },
+    "linsvc_uni_8k": {
+      "config": {
+        "cleaning": "legacy-v1",
+        "ngram_range": [
+          1,
+          1
+        ],
+        "min_df": 1,
+        "estimator": "linear_svc",
+        "C": 0.125
+      },
+      "training_set": "historical-8k",
+      "role": "training-set size comparison",
+      "config_sha256": "6950d6f7f15820389ed45aa1e5059de2869ea43b4062fe8c0b2dae2886df1117",
+      "model_version": "4d603bf7b6df",
+      "artefact_sha256": "4d603bf7b6df2a90469e4c1f12892caa505371423130e74d7ab959a3e893dd72",
+      "training_ids_sha256": "235f8aba80504637d6ef0e1eb8d039f7f94d82dc0a217d8ab94639783a8e6a1d",
+      "n_train": 8000
+    },
+    "linsvc_bi_full": {
+      "config": {
+        "cleaning": "legacy-v1",
+        "ngram_range": [
+          1,
+          2
+        ],
+        "min_df": 1,
+        "estimator": "linear_svc",
+        "C": 1.0
+      },
+      "training_set": "full",
+      "role": "feature comparison",
+      "config_sha256": "76b36bb17ad08d77fa2e159cb57c54560987665bb91d15ccd80467b4fd33824b",
+      "model_version": "1c3a1a88184f",
+      "artefact_sha256": "1c3a1a88184fd3bfb61736cb94f9d6cf5581e9f145915bb50a56eb152bf4600b",
+      "training_ids_sha256": "dcee790a2bb7cdf5d645d4dac51943da746730a164767b0076a9cb3ab34f938f",
+      "n_train": 25000
+    },
+    "linsvc_bi_v2_full": {
+      "config": {
+        "cleaning": "v2",
+        "ngram_range": [
+          1,
+          2
+        ],
+        "min_df": 1,
+        "estimator": "linear_svc",
+        "C": 0.5
+      },
+      "training_set": "full",
+      "role": "cleaning comparison",
+      "config_sha256": "f3ea43c289516e7c42e576fec492959b179eb292272e8ac152dc6c53a086938e",
+      "model_version": "f8f12e1f3db7",
+      "artefact_sha256": "f8f12e1f3db70160a11ee82f9c6bffb994e46b2aae826cfcbdd23fd16dfde632",
+      "training_ids_sha256": "dcee790a2bb7cdf5d645d4dac51943da746730a164767b0076a9cb3ab34f938f",
+      "n_train": 25000
+    }
+  },
+  "comparisons": [
+    {
+      "id": "size_svc",
+      "a": "svc_uni_full",
+      "b": "svc_uni_8k_historical",
+      "factor": "training-set size (SVC, C=1)"
+    },
+    {
+      "id": "size_linsvc",
+      "a": "linsvc_uni_full",
+      "b": "linsvc_uni_8k",
+      "factor": "training-set size (LinearSVC, same C)"
+    },
+    {
+      "id": "estimator_linsvc_vs_logreg",
+      "a": "linsvc_uni_full",
+      "b": "logreg_uni_full",
+      "factor": "estimator (both C-tuned on development folds)"
+    },
+    {
+      "id": "estimator_svc_vs_linsvc",
+      "a": "svc_uni_full",
+      "b": "linsvc_uni_full",
+      "factor": "estimator (SVC at the untuned historical C=1 vs C-tuned LinearSVC)"
+    },
+    {
+      "id": "features_bigrams",
+      "a": "linsvc_bi_full",
+      "b": "linsvc_uni_full",
+      "factor": "word 1-2 grams vs unigrams"
+    },
+    {
+      "id": "cleaning_v2",
+      "a": "linsvc_bi_v2_full",
+      "b": "linsvc_bi_full",
+      "factor": "cleaning v2 vs legacy-v1"
+    },
+    {
+      "id": "combined_vs_historical",
+      "a": "linsvc_bi_v2_full",
+      "b": "svc_uni_8k_historical",
+      "factor": "combined: estimator, C, features, cleaning and training-set size together"
+    }
+  ],
+  "final_model": {
+    "rule": "highest mean development accuracy among candidates fitted on the full training partition with a development-selected C (test results play no part)",
+    "candidate": "linsvc_bi_v2_full",
+    "development_mean_accuracy": 0.88392,
+    "considered": {
+      "logreg_uni_full": 0.86868,
+      "linsvc_uni_full": 0.86912,
+      "linsvc_bi_full": 0.88176,
+      "linsvc_bi_v2_full": 0.88392
+    }
+  },
+  "metrics": {
+    "primary": "accuracy",
+    "secondary": [
+      "macro_f1",
+      "precision_negative",
+      "recall_negative",
+      "error_negative",
+      "precision_positive",
+      "recall_positive",
+      "error_positive"
+    ],
+    "score_policy": "label = positive iff decision score > 0 (ties negative); majority: constant"
+  },
+  "statistics": {
+    "resampling": "stratified block bootstrap over review-id order within each (partition, label) directory; blocks resampled with replacement within label strata",
+    "block_ids": 30,
+    "n_boot": 10000,
+    "seed": 20261108,
+    "interval": "percentile, 95%",
+    "paired": "one set of block draws shared by all candidates; differences computed per replicate",
+    "sensitivity_block_ids": [
+      1,
+      60
+    ],
+    "multiplicity": "7 pre-specified comparisons; unadjusted 95% intervals plus Bonferroni-adjusted 99.29% intervals",
+    "assumption": "contiguous id blocks approximate movie groups (movie identifiers unavailable)"
+  },
+  "slices": {
+    "length_cut_points_words": [
+      126,
+      173,
+      281
+    ],
+    "length_definition": "whitespace tokens after replacing <br /> with a space",
+    "length_source": "quartiles of the training partition (frozen here, before test scoring)",
+    "rating": "star rating parsed from the file name: 1-4 negative, 7-10 positive"
+  },
+  "overlap_sensitivity": {
+    "exclude_test_reviews": "normalised text occurs in the training partition, or maximum TF-IDF cosine to a training review >= 0.9",
+    "source": "results/data/test_overlap.csv.gz"
+  },
+  "llm_baseline": {
+    "eligible_test_ids": "protocol/llm_eligible_test_ids.csv",
+    "eligible": "1000 per class, sampled without replacement (seed 20261108)",
+    "fewshot_exemplar_ids": "protocol/llm_fewshot_exemplar_ids.csv",
+    "exemplars": "2 per class from the training partition, 300-700 characters, no HTML (seed 20261108)",
+    "status": "runner implemented; no paid execution without an explicit spending limit"
+  },
+  "behavioural_suite": {
+    "file": "behavioural/suite_v1.jsonl",
+    "evaluation": "held-out families only",
+    "headline_rule": "unadjudicated cases are excluded from headline claims; results are reported as provisional until a person adjudicates them"
+  },
+  "decision_rules": [
+    "No configuration, hyperparameter, cleaning version, slice, metric or resampling choice changes after test scoring.",
+    "Any analysis not listed here is reported as exploratory.",
+    "If an evaluation defect is found after scoring, the corrected result is reported alongside a description of the defect; the test partition is then no longer described as untouched."
+  ]
+}

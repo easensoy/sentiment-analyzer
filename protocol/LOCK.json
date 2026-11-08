@@ -1,0 +1,30 @@
+{
+  "files": {
+    "protocol/protocol_v1.json": "f9a748b142394acf82d355ba23b618857b3a97a3c8e4342f23d8b0e35ebb8ffd",
+    "protocol/llm_eligible_test_ids.csv": "f8e77720d498fed756c2b1f1e40ecd4d6e6a577beb800157ccb4b76720cdd0cc",
+    "protocol/llm_fewshot_exemplar_ids.csv": "064306326108a19b810dbd73e8143cb728dd0c67282cb26655b6a7c7293e87f0",
+    "results/data/split_membership.csv.gz": "5ce751f70f77a5e30a696a699d0dc65b96f889aaddb5dfa1e00d6329c8bd9823",
+    "results/data/source_manifest.json": "94322163f05f29ed5b619b99f2c0594215c0065f4bf6de1d61ce1e72b981e1f0",
+    "results/data/duplicate_audit.json": "9d2034ac81a497681c34e3741b7d93688f0cbd2889943267bbf2349890acc8e9",
+    "results/data/test_overlap.csv.gz": "f1005e1b860db529ec947926d2ee3579138e38c029551cf3652c031c4506aaf6",
+    "results/dev/selection.json": "0011927f606e77cb1ff36d355e906c4daacfbfddd3a537473da459125af9cbb7",
+    "results/dev/cv_folds.csv": "222936681465341f20c77ee7199b6b6d3ad33554ceaf11b7ec56174534a89f91",
+    "behavioural/suite_v1.jsonl": "b7228baa343d0749efd8a4641ac5f963f699de54fecd0f09ef10478a06978301",
+    "src/cleaning.py": "cea4cfdd2357f51b4be811cc8aa490209f39548911c5590e92c30fcc412a7817",
+    "src/pipeline.py": "2c7fdc576f92adf9e02ed1eca566b2c37756dc5abe3101371b61f7654d763c15",
+    "study/configs.py": "e66c4537e9d89b4fd14b56cad70b5fdb1a78d0859e188989b231cf171c9c44d1",
+    "study/stats.py": "8e064b5d57e157da9635eba5c6f1ac8eeb9e6c4767a917af82347dfe89c5ab3d",
+    "study/evaluate.py": "51e5c64638448c1e54f11f87644a1daa4eabac5e58847ddcb8ce02680913a26a",
+    "study/behavioural.py": "606acb07777717d8bb7455f5f2a45c430dfd93a2744a40a04b3943583a50b022"
+  },
+  "fits": {
+    "linsvc_bi_full.json": "a76a9129c25153767e9d922d3e863e3c01902129c8870999cc19f7c309495d33",
+    "linsvc_bi_v2_full.json": "17719bd65db476c35d731aeb158fd71173d39bd688e48785eaa9b8febbcc21a6",
+    "linsvc_uni_8k.json": "32e0b7966d8b223ebfdacc0ec13f22db9008bf609a7eadd4d15a7997258ba131",
+    "linsvc_uni_full.json": "4b8a0968e07c4accb04b9343ccdbb59219b0d0d5bd4aad56dbb0b0a610604350",
+    "logreg_uni_full.json": "55a50d5cdbda4192634e768263f00e2c45f5d43791e09f962cfa9b7010057bfd",
+    "majority.json": "f82ad4d9e82a29a878c481901bf716f849b73bf2e0a15010205055da81da30cc",
+    "svc_uni_8k_historical.json": "af2a4790155a3984082a7ecfe0fb87805262d9622b4c07c3bf6b55d5a1e426dc",
+    "svc_uni_full.json": "8d4ba24c13e46bfa15241ab516f0d94cb55758c0524213882ab1c6590eddbbff"
+  }
+}

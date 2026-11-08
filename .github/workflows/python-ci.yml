@@ -23,3 +23,9 @@ jobs:
 
     - name: Run tests
       run: .venv/bin/python -m pytest tests/ -v --cov=src
+
+    - name: Verify the frozen evaluation protocol
+      run: .venv/bin/python -m study.protocol verify
+
+    - name: Check the README result tables against the result files
+      run: .venv/bin/python -m study.report --check
