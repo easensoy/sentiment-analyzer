@@ -1,8 +1,8 @@
 """Shared fixtures: a tiny, deterministic model, so tests run in milliseconds without models/."""
-import joblib
 import pytest
 
 from src.model import SentimentModel
+from src.pipeline import build_pipeline, publish
 from src.preprocessor import TextPreprocessor
 
 # Mirrored sentences: the shared words (film, story, acting...) appear in both classes,
@@ -21,6 +21,7 @@ NEGATIVE = [
     "poor direction and a forgettable score",
     "bad, annoying and very disappointing",
 ]
+CONFIG = {"cleaning": "legacy-v1", "ngram_range": [1, 1], "min_df": 1, "estimator": "svc", "C": 1.0}
 
 
 @pytest.fixture
@@ -30,6 +31,7 @@ def sentences():
 
 @pytest.fixture
 def fitted():
+    """The legacy two-object model (TextPreprocessor + SentimentModel), kept for loading old artefacts."""
     preprocessor = TextPreprocessor()
     model = SentimentModel()
     model.train(preprocessor.fit_transform(POSITIVE + NEGATIVE), [1] * len(POSITIVE) + [0] * len(NEGATIVE))
@@ -37,9 +39,15 @@ def fitted():
 
 
 @pytest.fixture
-def model_dir(tmp_path, fitted):
-    """The two files train.py writes, built from the tiny model."""
-    preprocessor, model = fitted
-    model.save(tmp_path / "model.joblib")
-    joblib.dump(preprocessor, tmp_path / "preprocessor.joblib")
-    return tmp_path
+def tiny_pipeline():
+    pipeline = build_pipeline(CONFIG)
+    pipeline.fit(POSITIVE + NEGATIVE, [1] * len(POSITIVE) + [0] * len(NEGATIVE))
+    return pipeline
+
+
+@pytest.fixture
+def model_dir(tmp_path, tiny_pipeline):
+    """A models directory as train.py leaves it: an immutable artefact plus the serving.json pointer."""
+    publish(tiny_pipeline, tmp_path / "models", candidate_id="tiny-test-model", config=CONFIG,
+            training={"protocol": "unit test", "rows": 10})
+    return tmp_path / "models"
