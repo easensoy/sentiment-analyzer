@@ -1,0 +1,9 @@
+candidate,batch_seconds,zero_feature_reviews,batch_reviews_per_second,latency_ms_p50,latency_ms_p90,latency_ms_p99,latency_sample
+majority,0.0,0,,,,,
+svc_uni_8k_historical,187.372,0,133.4,12.292,16.575,21.855,1000.0
+svc_uni_full,450.072,0,55.5,23.428,31.912,39.373,1000.0
+logreg_uni_full,3.034,0,8240.4,0.541,0.789,1.307,1000.0
+linsvc_uni_full,2.711,0,9221.4,0.972,1.477,2.76,1000.0
+linsvc_uni_8k,4.381,0,5706.0,0.695,1.296,1.933,1000.0
+linsvc_bi_full,11.288,0,2214.6,1.102,1.941,3.196,1000.0
+linsvc_bi_v2_full,19.313,0,1294.5,1.429,2.629,4.005,1000.0

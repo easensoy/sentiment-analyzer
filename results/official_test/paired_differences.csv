@@ -1,0 +1,169 @@
+comparison,a,b,factor,block_ids,metric,point,lo95,hi95,lo_bonferroni,hi_bonferroni,share_of_replicates_above_0
+size_svc,svc_uni_full,svc_uni_8k_historical,"training-set size (SVC, C=1)",30,accuracy,0.01544,0.012,0.0188475,0.0106321,0.0202742,1
+size_svc,svc_uni_full,svc_uni_8k_historical,"training-set size (SVC, C=1)",30,macro_f1,0.0154368,0.0120011,0.0188448,0.0106325,0.020272,1
+size_svc,svc_uni_full,svc_uni_8k_historical,"training-set size (SVC, C=1)",30,error_negative,-0.02264,-0.02736,-0.018,-0.02896,-0.016307,0
+size_svc,svc_uni_full,svc_uni_8k_historical,"training-set size (SVC, C=1)",30,error_positive,-0.00824,-0.0132,-0.00312,-0.0149797,-0.00117669,0.0008
+size_svc,svc_uni_full,svc_uni_8k_historical,"training-set size (SVC, C=1)",30,precision_negative,0.0100055,0.00547438,0.0143962,0.00384846,0.0158041,1
+size_svc,svc_uni_full,svc_uni_8k_historical,"training-set size (SVC, C=1)",30,recall_negative,0.02264,0.018,0.02736,0.016307,0.02896,1
+size_svc,svc_uni_full,svc_uni_8k_historical,"training-set size (SVC, C=1)",30,precision_positive,0.0209597,0.0168958,0.0251443,0.0152881,0.0266086,1
+size_svc,svc_uni_full,svc_uni_8k_historical,"training-set size (SVC, C=1)",30,recall_positive,0.00824,0.00312,0.0132,0.00117669,0.0149797,0.9992
+size_linsvc,linsvc_uni_full,linsvc_uni_8k,"training-set size (LinearSVC, same C)",30,accuracy,0.01804,0.015074,0.0211515,0.0139279,0.0224,1
+size_linsvc,linsvc_uni_full,linsvc_uni_8k,"training-set size (LinearSVC, same C)",30,macro_f1,0.0180569,0.0150926,0.0211767,0.013932,0.0224075,1
+size_linsvc,linsvc_uni_full,linsvc_uni_8k,"training-set size (LinearSVC, same C)",30,error_negative,-0.02888,-0.0332266,-0.02456,-0.0348521,-0.0232746,0
+size_linsvc,linsvc_uni_full,linsvc_uni_8k,"training-set size (LinearSVC, same C)",30,error_positive,-0.0072,-0.01144,-0.00296,-0.013043,-0.00144,0.0004
+size_linsvc,linsvc_uni_full,linsvc_uni_8k,"training-set size (LinearSVC, same C)",30,precision_negative,0.00988555,0.00606163,0.0137257,0.00472933,0.0152527,1
+size_linsvc,linsvc_uni_full,linsvc_uni_8k,"training-set size (LinearSVC, same C)",30,recall_negative,0.02888,0.02456,0.0332266,0.0232746,0.0348521,1
+size_linsvc,linsvc_uni_full,linsvc_uni_8k,"training-set size (LinearSVC, same C)",30,precision_positive,0.0258177,0.0221491,0.0295598,0.0210073,0.0309114,1
+size_linsvc,linsvc_uni_full,linsvc_uni_8k,"training-set size (LinearSVC, same C)",30,recall_positive,0.0072,0.00296,0.01144,0.00144,0.013043,0.9995
+estimator_linsvc_vs_logreg,linsvc_uni_full,logreg_uni_full,estimator (both C-tuned on development folds),30,accuracy,-0.001,-0.00207917,7.9968e-05,-0.00251828,0.00044,0.0301
+estimator_linsvc_vs_logreg,linsvc_uni_full,logreg_uni_full,estimator (both C-tuned on development folds),30,macro_f1,-0.000999751,-0.00207924,7.92022e-05,-0.00251856,0.000440729,0.0332
+estimator_linsvc_vs_logreg,linsvc_uni_full,logreg_uni_full,estimator (both C-tuned on development folds),30,error_negative,0.00304,0.00167866,0.00448359,0.00119904,0.00503714,1
+estimator_linsvc_vs_logreg,linsvc_uni_full,logreg_uni_full,estimator (both C-tuned on development folds),30,error_positive,-0.00104,-0.00264,0.000480769,-0.00328263,0.00119904,0.091
+estimator_linsvc_vs_logreg,linsvc_uni_full,logreg_uni_full,estimator (both C-tuned on development folds),30,precision_negative,0.000574926,-0.000806526,0.00199384,-0.0014015,0.00257412,0.7867
+estimator_linsvc_vs_logreg,linsvc_uni_full,logreg_uni_full,estimator (both C-tuned on development folds),30,recall_negative,-0.00304,-0.00448359,-0.00167866,-0.00503714,-0.00119904,0
+estimator_linsvc_vs_logreg,linsvc_uni_full,logreg_uni_full,estimator (both C-tuned on development folds),30,precision_positive,-0.00258175,-0.00388704,-0.00130958,-0.00439461,-0.000893402,0
+estimator_linsvc_vs_logreg,linsvc_uni_full,logreg_uni_full,estimator (both C-tuned on development folds),30,recall_positive,0.00104,-0.000480769,0.00264,-0.00119904,0.00328263,0.892
+estimator_svc_vs_linsvc,svc_uni_full,linsvc_uni_full,estimator (SVC at the untuned historical C=1 vs C-tuned LinearSVC),30,accuracy,-0.00216,-0.00464816,0.000279776,-0.00556351,0.00119932,0.0394
+estimator_svc_vs_linsvc,svc_uni_full,linsvc_uni_full,estimator (SVC at the untuned historical C=1 vs C-tuned LinearSVC),30,macro_f1,-0.00216351,-0.00465383,0.000272888,-0.00557045,0.00119411,0.0405
+estimator_svc_vs_linsvc,svc_uni_full,linsvc_uni_full,estimator (SVC at the untuned historical C=1 vs C-tuned LinearSVC),30,error_negative,-0.00384,-0.00703437,-0.00064,-0.00816,0.000640148,0.0089
+estimator_svc_vs_linsvc,svc_uni_full,linsvc_uni_full,estimator (SVC at the untuned historical C=1 vs C-tuned LinearSVC),30,error_positive,0.00816,0.00447642,0.01184,0.00303757,0.0132968,1
+estimator_svc_vs_linsvc,svc_uni_full,linsvc_uni_full,estimator (SVC at the untuned historical C=1 vs C-tuned LinearSVC),30,precision_negative,-0.00672319,-0.0100016,-0.00342926,-0.0112684,-0.0021951,0.0001
+estimator_svc_vs_linsvc,svc_uni_full,linsvc_uni_full,estimator (SVC at the untuned historical C=1 vs C-tuned LinearSVC),30,recall_negative,0.00384,0.00064,0.00703437,-0.000640148,0.00816,0.9895
+estimator_svc_vs_linsvc,svc_uni_full,linsvc_uni_full,estimator (SVC at the untuned historical C=1 vs C-tuned LinearSVC),30,precision_positive,0.00249607,-0.00038025,0.0053669,-0.00154078,0.00640727,0.9542
+estimator_svc_vs_linsvc,svc_uni_full,linsvc_uni_full,estimator (SVC at the untuned historical C=1 vs C-tuned LinearSVC),30,recall_positive,-0.00816,-0.01184,-0.00447642,-0.0132968,-0.00303757,0
+features_bigrams,linsvc_bi_full,linsvc_uni_full,word 1-2 grams vs unigrams,30,accuracy,0.01664,0.0138799,0.0193282,0.0129133,0.0202607,1
+features_bigrams,linsvc_bi_full,linsvc_uni_full,word 1-2 grams vs unigrams,30,macro_f1,0.0166396,0.0138797,0.0193277,0.0129125,0.0202602,1
+features_bigrams,linsvc_bi_full,linsvc_uni_full,word 1-2 grams vs unigrams,30,error_negative,-0.01504,-0.0188649,-0.0111111,-0.02032,-0.00981353,0
+features_bigrams,linsvc_bi_full,linsvc_uni_full,word 1-2 grams vs unigrams,30,error_positive,-0.01824,-0.0220624,-0.0143885,-0.0234213,-0.0131095,0
+features_bigrams,linsvc_bi_full,linsvc_uni_full,word 1-2 grams vs unigrams,30,precision_negative,0.0179513,0.0144635,0.0213347,0.0132461,0.0226405,1
+features_bigrams,linsvc_bi_full,linsvc_uni_full,word 1-2 grams vs unigrams,30,recall_negative,0.01504,0.0111111,0.0188649,0.00981353,0.02032,1
+features_bigrams,linsvc_bi_full,linsvc_uni_full,word 1-2 grams vs unigrams,30,precision_positive,0.0153419,0.011799,0.0187407,0.0106265,0.0200336,1
+features_bigrams,linsvc_bi_full,linsvc_uni_full,word 1-2 grams vs unigrams,30,recall_positive,0.01824,0.0143885,0.0220624,0.0131095,0.0234213,1
+cleaning_v2,linsvc_bi_v2_full,linsvc_bi_full,cleaning v2 vs legacy-v1,30,accuracy,-8e-05,-0.00179928,0.00160002,-0.00243833,0.00223936,0.4505
+cleaning_v2,linsvc_bi_v2_full,linsvc_bi_full,cleaning v2 vs legacy-v1,30,macro_f1,-8.11369e-05,-0.00179999,0.0015992,-0.00243895,0.00223788,0.4524
+cleaning_v2,linsvc_bi_v2_full,linsvc_bi_full,cleaning v2 vs legacy-v1,30,error_negative,0.002,-0.00032,0.00432346,-0.00120289,0.0052,0.9549
+cleaning_v2,linsvc_bi_v2_full,linsvc_bi_full,cleaning v2 vs legacy-v1,30,error_positive,-0.00184,-0.00431655,0.00064,-0.00528,0.0016,0.0662
+cleaning_v2,linsvc_bi_v2_full,linsvc_bi_full,cleaning v2 vs legacy-v1,30,precision_negative,0.00148478,-0.000794756,0.00372859,-0.0016266,0.00466976,0.9062
+cleaning_v2,linsvc_bi_v2_full,linsvc_bi_full,cleaning v2 vs legacy-v1,30,recall_negative,-0.002,-0.00432346,0.00032,-0.0052,0.00120289,0.0409
+cleaning_v2,linsvc_bi_v2_full,linsvc_bi_full,cleaning v2 vs legacy-v1,30,precision_positive,-0.00160718,-0.00370318,0.000488397,-0.00448682,0.00129198,0.0638
+cleaning_v2,linsvc_bi_v2_full,linsvc_bi_full,cleaning v2 vs legacy-v1,30,recall_positive,0.00184,-0.00064,0.00431655,-0.0016,0.00528,0.9261
+combined_vs_historical,linsvc_bi_v2_full,svc_uni_8k_historical,"combined: estimator, C, features, cleaning and training-set size together",30,accuracy,0.03416,0.0305356,0.0378,0.0290766,0.03924,1
+combined_vs_historical,linsvc_bi_v2_full,svc_uni_8k_historical,"combined: estimator, C, features, cleaning and training-set size together",30,macro_f1,0.0341588,0.0305343,0.0377967,0.029075,0.03924,1
+combined_vs_historical,linsvc_bi_v2_full,svc_uni_8k_historical,"combined: estimator, C, features, cleaning and training-set size together",30,error_negative,-0.03184,-0.0367706,-0.0270184,-0.0385292,-0.0251401,0
+combined_vs_historical,linsvc_bi_v2_full,svc_uni_8k_historical,"combined: estimator, C, features, cleaning and training-set size together",30,error_positive,-0.03648,-0.04184,-0.0310152,-0.04392,-0.02904,0
+combined_vs_historical,linsvc_bi_v2_full,svc_uni_8k_historical,"combined: estimator, C, features, cleaning and training-set size together",30,precision_negative,0.0361648,0.0312439,0.0409817,0.0295142,0.0428153,1
+combined_vs_historical,linsvc_bi_v2_full,svc_uni_8k_historical,"combined: estimator, C, features, cleaning and training-set size together",30,recall_negative,0.03184,0.0270184,0.0367706,0.0251401,0.0385292,1
+combined_vs_historical,linsvc_bi_v2_full,svc_uni_8k_historical,"combined: estimator, C, features, cleaning and training-set size together",30,precision_positive,0.0321984,0.0279218,0.0365198,0.0262825,0.0381628,1
+combined_vs_historical,linsvc_bi_v2_full,svc_uni_8k_historical,"combined: estimator, C, features, cleaning and training-set size together",30,recall_positive,0.03648,0.0310152,0.04184,0.02904,0.04392,1
+size_svc,svc_uni_full,svc_uni_8k_historical,"training-set size (SVC, C=1)",1,accuracy,0.01544,0.01216,0.01872,0.01096,0.0198916,1
+size_svc,svc_uni_full,svc_uni_8k_historical,"training-set size (SVC, C=1)",1,macro_f1,0.0154368,0.0121551,0.0187192,0.0109602,0.0198885,1
+size_svc,svc_uni_full,svc_uni_8k_historical,"training-set size (SVC, C=1)",1,error_negative,-0.02264,-0.02736,-0.01808,-0.02904,-0.01632,0
+size_svc,svc_uni_full,svc_uni_8k_historical,"training-set size (SVC, C=1)",1,error_positive,-0.00824,-0.01288,-0.00352,-0.0147431,-0.00184,0.0001
+size_svc,svc_uni_full,svc_uni_8k_historical,"training-set size (SVC, C=1)",1,precision_negative,0.0100055,0.00580924,0.0140395,0.00436665,0.0157373,1
+size_svc,svc_uni_full,svc_uni_8k_historical,"training-set size (SVC, C=1)",1,recall_negative,0.02264,0.01808,0.02736,0.01632,0.02904,1
+size_svc,svc_uni_full,svc_uni_8k_historical,"training-set size (SVC, C=1)",1,precision_positive,0.0209597,0.0168726,0.0251193,0.0153424,0.0266286,1
+size_svc,svc_uni_full,svc_uni_8k_historical,"training-set size (SVC, C=1)",1,recall_positive,0.00824,0.00352,0.01288,0.00184,0.0147431,0.9998
+size_linsvc,linsvc_uni_full,linsvc_uni_8k,"training-set size (LinearSVC, same C)",1,accuracy,0.01804,0.01528,0.02096,0.0142,0.0220516,1
+size_linsvc,linsvc_uni_full,linsvc_uni_8k,"training-set size (LinearSVC, same C)",1,macro_f1,0.0180569,0.0152974,0.0209718,0.0142139,0.0220794,1
+size_linsvc,linsvc_uni_full,linsvc_uni_8k,"training-set size (LinearSVC, same C)",1,error_negative,-0.02888,-0.03312,-0.02472,-0.03472,-0.02312,0
+size_linsvc,linsvc_uni_full,linsvc_uni_8k,"training-set size (LinearSVC, same C)",1,error_positive,-0.0072,-0.01112,-0.00336,-0.0125831,-0.00208,0
+size_linsvc,linsvc_uni_full,linsvc_uni_8k,"training-set size (LinearSVC, same C)",1,precision_negative,0.00988555,0.0064455,0.01345,0.00522156,0.0146864,1
+size_linsvc,linsvc_uni_full,linsvc_uni_8k,"training-set size (LinearSVC, same C)",1,recall_negative,0.02888,0.02472,0.03312,0.02312,0.03472,1
+size_linsvc,linsvc_uni_full,linsvc_uni_8k,"training-set size (LinearSVC, same C)",1,precision_positive,0.0258177,0.0222836,0.0294923,0.0208607,0.0308868,1
+size_linsvc,linsvc_uni_full,linsvc_uni_8k,"training-set size (LinearSVC, same C)",1,recall_positive,0.0072,0.00336,0.01112,0.00208,0.0125831,1
+estimator_linsvc_vs_logreg,linsvc_uni_full,logreg_uni_full,estimator (both C-tuned on development folds),1,accuracy,-0.001,-0.00208,8e-05,-0.00252,0.00044,0.0288
+estimator_linsvc_vs_logreg,linsvc_uni_full,logreg_uni_full,estimator (both C-tuned on development folds),1,macro_f1,-0.000999751,-0.00208035,7.90757e-05,-0.00251976,0.000442423,0.0324
+estimator_linsvc_vs_logreg,linsvc_uni_full,logreg_uni_full,estimator (both C-tuned on development folds),1,error_negative,0.00304,0.00168,0.00448,0.00112,0.00512,1
+estimator_linsvc_vs_logreg,linsvc_uni_full,logreg_uni_full,estimator (both C-tuned on development folds),1,error_positive,-0.00104,-0.00264,0.000562,-0.00328,0.00128,0.0925
+estimator_linsvc_vs_logreg,linsvc_uni_full,logreg_uni_full,estimator (both C-tuned on development folds),1,precision_negative,0.000574926,-0.000875879,0.00200705,-0.00147995,0.00253459,0.7837
+estimator_linsvc_vs_logreg,linsvc_uni_full,logreg_uni_full,estimator (both C-tuned on development folds),1,recall_negative,-0.00304,-0.00448,-0.00168,-0.00512,-0.00112,0
+estimator_linsvc_vs_logreg,linsvc_uni_full,logreg_uni_full,estimator (both C-tuned on development folds),1,precision_positive,-0.00258175,-0.00388155,-0.0013344,-0.00442852,-0.000887505,0
+estimator_linsvc_vs_logreg,linsvc_uni_full,logreg_uni_full,estimator (both C-tuned on development folds),1,recall_positive,0.00104,-0.000562,0.00264,-0.00128,0.00328,0.8894
+estimator_svc_vs_linsvc,svc_uni_full,linsvc_uni_full,estimator (SVC at the untuned historical C=1 vs C-tuned LinearSVC),1,accuracy,-0.00216,-0.00456,0.000241,-0.00541157,0.00112,0.038
+estimator_svc_vs_linsvc,svc_uni_full,linsvc_uni_full,estimator (SVC at the untuned historical C=1 vs C-tuned LinearSVC),1,macro_f1,-0.00216351,-0.00456152,0.000242296,-0.0054171,0.00111709,0.0382
+estimator_svc_vs_linsvc,svc_uni_full,linsvc_uni_full,estimator (SVC at the untuned historical C=1 vs C-tuned LinearSVC),1,error_negative,-0.00384,-0.00704,-0.00072,-0.00832,0.000503143,0.0088
+estimator_svc_vs_linsvc,svc_uni_full,linsvc_uni_full,estimator (SVC at the untuned historical C=1 vs C-tuned LinearSVC),1,error_positive,0.00816,0.00464,0.01176,0.00328,0.01312,1
+estimator_svc_vs_linsvc,svc_uni_full,linsvc_uni_full,estimator (SVC at the untuned historical C=1 vs C-tuned LinearSVC),1,precision_negative,-0.00672319,-0.00990375,-0.00360314,-0.0110851,-0.0024052,0
+estimator_svc_vs_linsvc,svc_uni_full,linsvc_uni_full,estimator (SVC at the untuned historical C=1 vs C-tuned LinearSVC),1,recall_negative,0.00384,0.00072,0.00704,-0.000503143,0.00832,0.9903
+estimator_svc_vs_linsvc,svc_uni_full,linsvc_uni_full,estimator (SVC at the untuned historical C=1 vs C-tuned LinearSVC),1,precision_positive,0.00249607,-0.000351734,0.00539357,-0.0014481,0.00646552,0.9555
+estimator_svc_vs_linsvc,svc_uni_full,linsvc_uni_full,estimator (SVC at the untuned historical C=1 vs C-tuned LinearSVC),1,recall_positive,-0.00816,-0.01176,-0.00464,-0.01312,-0.00328,0
+features_bigrams,linsvc_bi_full,linsvc_uni_full,word 1-2 grams vs unigrams,1,accuracy,0.01664,0.01396,0.01936,0.0129884,0.02028,1
+features_bigrams,linsvc_bi_full,linsvc_uni_full,word 1-2 grams vs unigrams,1,macro_f1,0.0166396,0.0139598,0.0193595,0.0129882,0.0202801,1
+features_bigrams,linsvc_bi_full,linsvc_uni_full,word 1-2 grams vs unigrams,1,error_negative,-0.01504,-0.01888,-0.01136,-0.0204,-0.00992,0
+features_bigrams,linsvc_bi_full,linsvc_uni_full,word 1-2 grams vs unigrams,1,error_positive,-0.01824,-0.022,-0.01448,-0.02344,-0.0130969,0
+features_bigrams,linsvc_bi_full,linsvc_uni_full,word 1-2 grams vs unigrams,1,precision_negative,0.0179513,0.0145623,0.0213696,0.0133075,0.0226297,1
+features_bigrams,linsvc_bi_full,linsvc_uni_full,word 1-2 grams vs unigrams,1,recall_negative,0.01504,0.01136,0.01888,0.00992,0.0204,1
+features_bigrams,linsvc_bi_full,linsvc_uni_full,word 1-2 grams vs unigrams,1,precision_positive,0.0153419,0.0120343,0.0187876,0.010863,0.0201267,1
+features_bigrams,linsvc_bi_full,linsvc_uni_full,word 1-2 grams vs unigrams,1,recall_positive,0.01824,0.01448,0.022,0.0130969,0.02344,1
+cleaning_v2,linsvc_bi_v2_full,linsvc_bi_full,cleaning v2 vs legacy-v1,1,accuracy,-8e-05,-0.00172,0.0016,-0.00236,0.0022,0.4521
+cleaning_v2,linsvc_bi_v2_full,linsvc_bi_full,cleaning v2 vs legacy-v1,1,macro_f1,-8.11369e-05,-0.00172173,0.00159958,-0.00236026,0.00219937,0.4535
+cleaning_v2,linsvc_bi_v2_full,linsvc_bi_full,cleaning v2 vs legacy-v1,1,error_negative,0.002,-0.00032,0.00432,-0.00112,0.00512,0.9502
+cleaning_v2,linsvc_bi_v2_full,linsvc_bi_full,cleaning v2 vs legacy-v1,1,error_positive,-0.00184,-0.00424,0.00056,-0.00496,0.00152,0.0609
+cleaning_v2,linsvc_bi_v2_full,linsvc_bi_full,cleaning v2 vs legacy-v1,1,precision_negative,0.00148478,-0.000689371,0.00371125,-0.00162308,0.00440822,0.9078
+cleaning_v2,linsvc_bi_v2_full,linsvc_bi_full,cleaning v2 vs legacy-v1,1,recall_negative,-0.002,-0.00432,0.00032,-0.00512,0.00112,0.0427
+cleaning_v2,linsvc_bi_v2_full,linsvc_bi_full,cleaning v2 vs legacy-v1,1,precision_positive,-0.00160718,-0.00370005,0.000510277,-0.00439724,0.00127366,0.066
+cleaning_v2,linsvc_bi_v2_full,linsvc_bi_full,cleaning v2 vs legacy-v1,1,recall_positive,0.00184,-0.00056,0.00424,-0.00152,0.00496,0.9308
+combined_vs_historical,linsvc_bi_v2_full,svc_uni_8k_historical,"combined: estimator, C, features, cleaning and training-set size together",1,accuracy,0.03416,0.0308,0.037641,0.0296,0.0389716,1
+combined_vs_historical,linsvc_bi_v2_full,svc_uni_8k_historical,"combined: estimator, C, features, cleaning and training-set size together",1,macro_f1,0.0341588,0.0307996,0.0376414,0.0295984,0.0389694,1
+combined_vs_historical,linsvc_bi_v2_full,svc_uni_8k_historical,"combined: estimator, C, features, cleaning and training-set size together",1,error_negative,-0.03184,-0.03664,-0.02696,-0.03856,-0.0252,0
+combined_vs_historical,linsvc_bi_v2_full,svc_uni_8k_historical,"combined: estimator, C, features, cleaning and training-set size together",1,error_positive,-0.03648,-0.04136,-0.03168,-0.0431431,-0.03,0
+combined_vs_historical,linsvc_bi_v2_full,svc_uni_8k_historical,"combined: estimator, C, features, cleaning and training-set size together",1,precision_negative,0.0361648,0.0318811,0.04057,0.0303208,0.0420966,1
+combined_vs_historical,linsvc_bi_v2_full,svc_uni_8k_historical,"combined: estimator, C, features, cleaning and training-set size together",1,recall_negative,0.03184,0.02696,0.03664,0.0252,0.03856,1
+combined_vs_historical,linsvc_bi_v2_full,svc_uni_8k_historical,"combined: estimator, C, features, cleaning and training-set size together",1,precision_positive,0.0321984,0.0279486,0.0364408,0.0263976,0.0381837,1
+combined_vs_historical,linsvc_bi_v2_full,svc_uni_8k_historical,"combined: estimator, C, features, cleaning and training-set size together",1,recall_positive,0.03648,0.03168,0.04136,0.03,0.0431431,1
+size_svc,svc_uni_full,svc_uni_8k_historical,"training-set size (SVC, C=1)",60,accuracy,0.01544,0.0119177,0.0189297,0.0105577,0.0202148,1
+size_svc,svc_uni_full,svc_uni_8k_historical,"training-set size (SVC, C=1)",60,macro_f1,0.0154368,0.0119021,0.0189267,0.0105486,0.0202149,1
+size_svc,svc_uni_full,svc_uni_8k_historical,"training-set size (SVC, C=1)",60,error_negative,-0.02264,-0.02736,-0.0178967,-0.0290438,-0.0161882,0
+size_svc,svc_uni_full,svc_uni_8k_historical,"training-set size (SVC, C=1)",60,error_positive,-0.00824,-0.0135266,-0.0030303,-0.0153689,-0.00069805,0.0013
+size_svc,svc_uni_full,svc_uni_8k_historical,"training-set size (SVC, C=1)",60,precision_negative,0.0100055,0.00548729,0.0146128,0.00341588,0.0162477,0.9999
+size_svc,svc_uni_full,svc_uni_8k_historical,"training-set size (SVC, C=1)",60,recall_negative,0.02264,0.0178967,0.02736,0.0161882,0.0290438,1
+size_svc,svc_uni_full,svc_uni_8k_historical,"training-set size (SVC, C=1)",60,precision_positive,0.0209597,0.0167183,0.0251119,0.0153188,0.0266479,1
+size_svc,svc_uni_full,svc_uni_8k_historical,"training-set size (SVC, C=1)",60,recall_positive,0.00824,0.0030303,0.0135266,0.00069805,0.0153689,0.9985
+size_linsvc,linsvc_uni_full,linsvc_uni_8k,"training-set size (LinearSVC, same C)",60,accuracy,0.01804,0.0151115,0.0210737,0.0141354,0.0222122,1
+size_linsvc,linsvc_uni_full,linsvc_uni_8k,"training-set size (LinearSVC, same C)",60,macro_f1,0.0180569,0.0151227,0.0210882,0.0141437,0.02224,1
+size_linsvc,linsvc_uni_full,linsvc_uni_8k,"training-set size (LinearSVC, same C)",60,error_negative,-0.02888,-0.0330941,-0.02472,-0.034516,-0.02336,0
+size_linsvc,linsvc_uni_full,linsvc_uni_8k,"training-set size (LinearSVC, same C)",60,error_positive,-0.0072,-0.0114833,-0.00295056,-0.013015,-0.00151515,0.0002
+size_linsvc,linsvc_uni_full,linsvc_uni_8k,"training-set size (LinearSVC, same C)",60,precision_negative,0.00988555,0.0060406,0.0137526,0.00485117,0.015169,1
+size_linsvc,linsvc_uni_full,linsvc_uni_8k,"training-set size (LinearSVC, same C)",60,recall_negative,0.02888,0.02472,0.0330941,0.02336,0.034516,1
+size_linsvc,linsvc_uni_full,linsvc_uni_8k,"training-set size (LinearSVC, same C)",60,precision_positive,0.0258177,0.0222566,0.0293895,0.0210911,0.030599,1
+size_linsvc,linsvc_uni_full,linsvc_uni_8k,"training-set size (LinearSVC, same C)",60,recall_positive,0.0072,0.00295056,0.0114833,0.00151515,0.013015,0.9997
+estimator_linsvc_vs_logreg,linsvc_uni_full,logreg_uni_full,estimator (both C-tuned on development folds),60,accuracy,-0.001,-0.00204,4e-05,-0.00240882,0.000399361,0.0271
+estimator_linsvc_vs_logreg,linsvc_uni_full,logreg_uni_full,estimator (both C-tuned on development folds),60,macro_f1,-0.000999751,-0.0020405,4.0562e-05,-0.00240942,0.000398068,0.0299
+estimator_linsvc_vs_logreg,linsvc_uni_full,logreg_uni_full,estimator (both C-tuned on development folds),60,error_negative,0.00304,0.00168,0.00446571,0.00112,0.00505618,1
+estimator_linsvc_vs_logreg,linsvc_uni_full,logreg_uni_full,estimator (both C-tuned on development folds),60,error_positive,-0.00104,-0.00256,0.000481541,-0.00318979,0.00105008,0.0853
+estimator_linsvc_vs_logreg,linsvc_uni_full,logreg_uni_full,estimator (both C-tuned on development folds),60,precision_negative,0.000574926,-0.00080581,0.00193814,-0.00129912,0.00246161,0.795
+estimator_linsvc_vs_logreg,linsvc_uni_full,logreg_uni_full,estimator (both C-tuned on development folds),60,recall_negative,-0.00304,-0.00446571,-0.00168,-0.00505618,-0.00112,0
+estimator_linsvc_vs_logreg,linsvc_uni_full,logreg_uni_full,estimator (both C-tuned on development folds),60,precision_positive,-0.00258175,-0.00385567,-0.00134236,-0.00439044,-0.000863658,0
+estimator_linsvc_vs_logreg,linsvc_uni_full,logreg_uni_full,estimator (both C-tuned on development folds),60,recall_positive,0.00104,-0.000481541,0.00256,-0.00105008,0.00318979,0.8953
+estimator_svc_vs_linsvc,svc_uni_full,linsvc_uni_full,estimator (SVC at the untuned historical C=1 vs C-tuned LinearSVC),60,accuracy,-0.00216,-0.00464,0.000280449,-0.00555627,0.00119919,0.042
+estimator_svc_vs_linsvc,svc_uni_full,linsvc_uni_full,estimator (SVC at the untuned historical C=1 vs C-tuned LinearSVC),60,macro_f1,-0.00216351,-0.00463824,0.000280662,-0.00555915,0.00119872,0.0423
+estimator_svc_vs_linsvc,svc_uni_full,linsvc_uni_full,estimator (SVC at the untuned historical C=1 vs C-tuned LinearSVC),60,error_negative,-0.00384,-0.00685805,-0.000802504,-0.00805423,0.0004227,0.006
+estimator_svc_vs_linsvc,svc_uni_full,linsvc_uni_full,estimator (SVC at the untuned historical C=1 vs C-tuned LinearSVC),60,error_positive,0.00816,0.00422648,0.0121212,0.00271132,0.0136364,1
+estimator_svc_vs_linsvc,svc_uni_full,linsvc_uni_full,estimator (SVC at the untuned historical C=1 vs C-tuned LinearSVC),60,precision_negative,-0.00672319,-0.010248,-0.00321729,-0.0115225,-0.0018997,0
+estimator_svc_vs_linsvc,svc_uni_full,linsvc_uni_full,estimator (SVC at the untuned historical C=1 vs C-tuned LinearSVC),60,recall_negative,0.00384,0.000802504,0.00685805,-0.0004227,0.00805423,0.9929
+estimator_svc_vs_linsvc,svc_uni_full,linsvc_uni_full,estimator (SVC at the untuned historical C=1 vs C-tuned LinearSVC),60,precision_positive,0.00249607,-0.000215097,0.00524716,-0.00134318,0.00632219,0.9631
+estimator_svc_vs_linsvc,svc_uni_full,linsvc_uni_full,estimator (SVC at the untuned historical C=1 vs C-tuned LinearSVC),60,recall_positive,-0.00816,-0.0121212,-0.00422648,-0.0136364,-0.00271132,0
+features_bigrams,linsvc_bi_full,linsvc_uni_full,word 1-2 grams vs unigrams,60,accuracy,0.01664,0.0138578,0.0195112,0.01284,0.0204997,1
+features_bigrams,linsvc_bi_full,linsvc_uni_full,word 1-2 grams vs unigrams,60,macro_f1,0.0166396,0.013858,0.0195109,0.012839,0.0204992,1
+features_bigrams,linsvc_bi_full,linsvc_uni_full,word 1-2 grams vs unigrams,60,error_negative,-0.01504,-0.01896,-0.0111557,-0.0205641,-0.00972887,0
+features_bigrams,linsvc_bi_full,linsvc_uni_full,word 1-2 grams vs unigrams,60,error_positive,-0.01824,-0.02224,-0.0144119,-0.0236812,-0.0129075,0
+features_bigrams,linsvc_bi_full,linsvc_uni_full,word 1-2 grams vs unigrams,60,precision_negative,0.0179513,0.0144734,0.0215613,0.0131283,0.0229149,1
+features_bigrams,linsvc_bi_full,linsvc_uni_full,word 1-2 grams vs unigrams,60,recall_negative,0.01504,0.0111557,0.01896,0.00972887,0.0205641,1
+features_bigrams,linsvc_bi_full,linsvc_uni_full,word 1-2 grams vs unigrams,60,precision_positive,0.0153419,0.0118486,0.0188623,0.0106414,0.0203272,1
+features_bigrams,linsvc_bi_full,linsvc_uni_full,word 1-2 grams vs unigrams,60,recall_positive,0.01824,0.0144119,0.02224,0.0129075,0.0236812,1
+cleaning_v2,linsvc_bi_v2_full,linsvc_bi_full,cleaning v2 vs legacy-v1,60,accuracy,-8e-05,-0.00184591,0.00168,-0.0024361,0.00228106,0.4559
+cleaning_v2,linsvc_bi_v2_full,linsvc_bi_full,cleaning v2 vs legacy-v1,60,macro_f1,-8.11369e-05,-0.00184818,0.00167744,-0.00243658,0.00228157,0.4586
+cleaning_v2,linsvc_bi_v2_full,linsvc_bi_full,cleaning v2 vs legacy-v1,60,error_negative,0.002,-0.00048,0.00454545,-0.00135566,0.00534785,0.937
+cleaning_v2,linsvc_bi_v2_full,linsvc_bi_full,cleaning v2 vs legacy-v1,60,error_positive,-0.00184,-0.00426731,0.00072,-0.00514122,0.00167464,0.073
+cleaning_v2,linsvc_bi_v2_full,linsvc_bi_full,cleaning v2 vs legacy-v1,60,precision_negative,0.00148478,-0.000874298,0.00372001,-0.00171215,0.00451839,0.8983
+cleaning_v2,linsvc_bi_v2_full,linsvc_bi_full,cleaning v2 vs legacy-v1,60,recall_negative,-0.002,-0.00454545,0.00048,-0.00534785,0.00135566,0.0558
+cleaning_v2,linsvc_bi_v2_full,linsvc_bi_full,cleaning v2 vs legacy-v1,60,precision_positive,-0.00160718,-0.00389051,0.000645587,-0.00461449,0.00139341,0.0814
+cleaning_v2,linsvc_bi_v2_full,linsvc_bi_full,cleaning v2 vs legacy-v1,60,recall_positive,0.00184,-0.00072,0.00426731,-0.00167464,0.00514122,0.919
+combined_vs_historical,linsvc_bi_v2_full,svc_uni_8k_historical,"combined: estimator, C, features, cleaning and training-set size together",60,accuracy,0.03416,0.0304886,0.03792,0.029,0.039334,1
+combined_vs_historical,linsvc_bi_v2_full,svc_uni_8k_historical,"combined: estimator, C, features, cleaning and training-set size together",60,macro_f1,0.0341588,0.0304908,0.0379181,0.0289998,0.0393325,1
+combined_vs_historical,linsvc_bi_v2_full,svc_uni_8k_historical,"combined: estimator, C, features, cleaning and training-set size together",60,error_negative,-0.03184,-0.0370787,-0.0266506,-0.0388485,-0.0248563,0
+combined_vs_historical,linsvc_bi_v2_full,svc_uni_8k_historical,"combined: estimator, C, features, cleaning and training-set size together",60,error_positive,-0.03648,-0.041866,-0.0312199,-0.0438457,-0.02928,0
+combined_vs_historical,linsvc_bi_v2_full,svc_uni_8k_historical,"combined: estimator, C, features, cleaning and training-set size together",60,precision_negative,0.0361648,0.0314711,0.0409839,0.0296757,0.0428382,1
+combined_vs_historical,linsvc_bi_v2_full,svc_uni_8k_historical,"combined: estimator, C, features, cleaning and training-set size together",60,recall_negative,0.03184,0.0266506,0.0370787,0.0248563,0.0388485,1
+combined_vs_historical,linsvc_bi_v2_full,svc_uni_8k_historical,"combined: estimator, C, features, cleaning and training-set size together",60,precision_positive,0.0321984,0.0276035,0.0368006,0.0259414,0.0383898,1
+combined_vs_historical,linsvc_bi_v2_full,svc_uni_8k_historical,"combined: estimator, C, features, cleaning and training-set size together",60,recall_positive,0.03648,0.0312199,0.041866,0.02928,0.0438457,1
