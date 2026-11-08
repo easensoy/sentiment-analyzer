@@ -1,0 +1,9 @@
+candidate,error_negative,error_positive,difference,lo95,hi95,share_of_replicates_above_0,status
+majority,0,1,-1,-1,-1,0,exploratory (post hoc)
+svc_uni_8k_historical,0.1332,0.12984,0.00336,-0.00719424,0.0137715,0.741,exploratory (post hoc)
+svc_uni_full,0.11056,0.1216,-0.01104,-0.0207777,-0.00141784,0.0132,exploratory (post hoc)
+logreg_uni_full,0.11136,0.11448,-0.00312,-0.0129499,0.00664118,0.2675,exploratory (post hoc)
+linsvc_uni_full,0.1144,0.11344,0.00096,-0.00886426,0.0107914,0.5769,exploratory (post hoc)
+linsvc_uni_8k,0.14328,0.12064,0.02264,0.0120627,0.0333604,1,exploratory (post hoc)
+linsvc_bi_full,0.09936,0.0952,0.00416,-0.00487488,0.0131896,0.8185,exploratory (post hoc)
+linsvc_bi_v2_full,0.10136,0.09336,0.008,-0.000802139,0.0170364,0.9614,exploratory (post hoc)
