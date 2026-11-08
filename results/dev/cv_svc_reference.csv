@@ -1,0 +1,6 @@
+features,cleaning,estimator,C,fold,n_train,n_valid,n_features,accuracy,error_negative,error_positive,fit_seconds
+legacy-v1/unigram,legacy-v1,svc,1.0,0,20000,5000,95115,0.8588,0.1216,0.1608,1115.727
+legacy-v1/unigram,legacy-v1,svc,1.0,1,20000,5000,96014,0.8456,0.1488,0.16,1121.34
+legacy-v1/unigram,legacy-v1,svc,1.0,2,20000,5000,96009,0.8602,0.124,0.1556,1132.316
+legacy-v1/unigram,legacy-v1,svc,1.0,3,20000,5000,96215,0.8748,0.1324,0.118,1131.228
+legacy-v1/unigram,legacy-v1,svc,1.0,4,20000,5000,95699,0.8642,0.1216,0.15,1124.967

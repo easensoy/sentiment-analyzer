@@ -1,0 +1,27 @@
+{
+  "purpose": "train.py now fits one sklearn Pipeline (cleaning legacy-v1 -> TF-IDF -> SVC). This records that the re-fit reproduces the historical two-file artefact exactly, so the historical results describe it.",
+  "legacy_artefact": {
+    "files": [
+      "model.joblib",
+      "preprocessor.joblib"
+    ],
+    "model_version": "98bcdfb288fc"
+  },
+  "pipeline_artefact": {
+    "model_version": "9e34bdd2005c",
+    "candidate_id": "historical-svc-c1-uni-legacy-v1-8k"
+  },
+  "checks": {
+    "vocabulary_identical": true,
+    "idf_identical": true,
+    "support_vectors_identical": true,
+    "dual_coef_identical": true,
+    "intercept_identical": true,
+    "holdout_scores_max_abs_diff": 0.0,
+    "holdout_texts_and_labels_identical": true,
+    "holdout_predictions_identical": true,
+    "metrics_identical_except_timing": true
+  },
+  "historical_train_seconds": 67.4,
+  "refit_train_seconds": 74.0
+}

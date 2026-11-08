@@ -1,0 +1,101 @@
+{
+  "rule": "highest mean validation accuracy over 5 grouped folds; ties to the smaller C",
+  "folds": "100-id blocks per label dealt to 5 folds (seed 42); 2,500 reviews per class per fold",
+  "grids": {
+    "logreg": [
+      0.25,
+      0.5,
+      1.0,
+      2.0,
+      4.0,
+      8.0,
+      16.0,
+      32.0
+    ],
+    "linear_svc": [
+      0.03125,
+      0.0625,
+      0.125,
+      0.25,
+      0.5,
+      1.0,
+      2.0
+    ]
+  },
+  "selected_C": {
+    "linear_svc": {
+      "legacy-v1/uni+bigram": 1.0,
+      "legacy-v1/unigram": 0.125,
+      "v2/uni+bigram": 0.5
+    },
+    "logreg": {
+      "legacy-v1/uni+bigram": 32.0,
+      "legacy-v1/unigram": 2.0,
+      "v2/uni+bigram": 32.0
+    }
+  },
+  "summary": {
+    "linear_svc": {
+      "legacy-v1/uni+bigram": {
+        "C": 1.0,
+        "mean_accuracy": 0.88176,
+        "sd_accuracy": 0.01045
+      },
+      "legacy-v1/unigram": {
+        "C": 0.125,
+        "mean_accuracy": 0.86912,
+        "sd_accuracy": 0.01005
+      },
+      "v2/uni+bigram": {
+        "C": 0.5,
+        "mean_accuracy": 0.88392,
+        "sd_accuracy": 0.01141
+      }
+    },
+    "logreg": {
+      "legacy-v1/uni+bigram": {
+        "C": 32.0,
+        "mean_accuracy": 0.88224,
+        "sd_accuracy": 0.01074
+      },
+      "legacy-v1/unigram": {
+        "C": 2.0,
+        "mean_accuracy": 0.86868,
+        "sd_accuracy": 0.01091
+      },
+      "v2/uni+bigram": {
+        "C": 32.0,
+        "mean_accuracy": 0.88384,
+        "sd_accuracy": 0.01105
+      }
+    }
+  },
+  "branch_estimator_rule": "higher D1 mean accuracy among logreg and linear_svc on legacy-v1 unigrams",
+  "branch_estimator": "linear_svc",
+  "v2_ablation_at_selected_C": {
+    "v2": {
+      "mean_accuracy": 0.88392,
+      "sd_accuracy": 0.01141
+    },
+    "v2-no-contractions": {
+      "mean_accuracy": 0.88368,
+      "sd_accuracy": 0.01198
+    },
+    "v2-no-digits": {
+      "mean_accuracy": 0.88356,
+      "sd_accuracy": 0.01132
+    },
+    "v2-no-fold": {
+      "mean_accuracy": 0.88416,
+      "sd_accuracy": 0.01113
+    },
+    "v2-no-html": {
+      "mean_accuracy": 0.88328,
+      "sd_accuracy": 0.01131
+    },
+    "v2-no-space": {
+      "mean_accuracy": 0.88336,
+      "sd_accuracy": 0.00924
+    }
+  }
+}
