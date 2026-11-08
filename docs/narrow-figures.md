@@ -32,6 +32,6 @@ Five constructed probes scored by the historical model. Data: `visual_outputs/06
 
 Historical internal holdout, error rate by true class and length quartile. Data: `visual_outputs/07_error_by_length.csv`.
 
-<img src="../visual_outputs/08_score_contributions_narrow_light.png" width="360" alt="Additive decomposition of the historical model's decision function for "The movie was not good."">
+<img src="../visual_outputs/08_score_contributions_narrow_light.png" width="360" alt="Additive decomposition of the historical model's decision function for “The movie was not good.”">
 
 Additive decomposition of one decision score. Data: `visual_outputs/08_score_contributions.csv`.
