@@ -1,15 +1,17 @@
-"""Render the README's three figures, light and dark, from the saved model and its held-out predictions.
+"""Render the historical-model figures (06-08), light and dark, from the published historical Pipeline.
 
 Run from the repo root after `python train.py`:
 
     python scripts/make_readme_figures.py
 
-Reads models/ (model.joblib, preprocessor.joblib, metrics.json, test_predictions.csv) and
-data/training_data.csv. Before drawing, it checks that they agree: the seeded split rebuilt
-from the data must give the rows of test_predictions.csv, the saved model must reproduce
-every saved prediction, the recomputed accuracy and confusion matrix must equal
-metrics.json, and the decomposed score must add up to the model's own score. Any mismatch
-stops the script. Writes to visual_outputs/:
+These figures describe the historical model and its internal holdout (2026-11-06 protocol); the
+official-test study has its own figures (study/figures.py). Reads the Pipeline artefact that
+train.py publishes (models/serving.json), models/test_predictions.csv, the original run's
+metrics (results/historical/metrics.json) and data/training_data.csv. Before drawing, it checks
+that they agree: the seeded split rebuilt from the data must give the rows of
+test_predictions.csv, the model must reproduce every saved prediction, the recomputed accuracy
+and confusion matrix must equal the original metrics, and the decomposed score must add up to
+the model's own score. Any mismatch stops the script. Writes to visual_outputs/:
 
     06_probe_outputs_{light,dark}.png        five hand-written probes: expected, predicted, signed decision score
     07_error_by_length_{light,dark}.png      held-out error rate by review length and true class
@@ -48,11 +50,12 @@ from sklearn.model_selection import train_test_split  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))  # joblib must import src.preprocessor to unpickle it
-from src.api import artefact_version  # noqa: E402
-from src.model import LABELS, SentimentModel  # noqa: E402
+from src.pipeline import LABELS, labels_from_scores, load  # noqa: E402
 from train import wilson_interval  # noqa: E402
 
 MODELS = ROOT / "models"
+HISTORICAL_METRICS = ROOT / "results" / "historical" / "metrics.json"  # the original 2026-11-07 run
+HISTORICAL_ID = "historical-svc-c1-uni-legacy-v1-8k"
 OUT = ROOT / "visual_outputs"
 
 WIDTH = 830  # CSS px: the README column on github.com in a desktop browser
@@ -93,7 +96,7 @@ QUARTERS = ["shortest quarter", "second quarter", "third quarter", "longest quar
 
 def load_and_check():
     """Load the artefacts and stop unless they reproduce the reported evaluation exactly."""
-    metrics = json.loads((MODELS / "metrics.json").read_text(encoding="utf-8"))
+    metrics = json.loads(HISTORICAL_METRICS.read_text(encoding="utf-8"))
     data = pd.read_csv(ROOT / Path(metrics["data"].replace("\\", "/")))
     held = pd.read_csv(MODELS / "test_predictions.csv")
     _, x_test, _, y_test = train_test_split(data["text"], data["label"], test_size=metrics["test_size"],
@@ -101,25 +104,28 @@ def load_and_check():
     if x_test.tolist() != held["text"].tolist() or y_test.tolist() != held["label"].tolist():
         raise SystemExit("models/test_predictions.csv is not the seeded held-out split of the data; rerun train.py")
 
-    model = SentimentModel()
-    model.load(MODELS / "model.joblib")
-    pre = joblib.load(MODELS / "preprocessor.joblib")
-    if list(model.model.classes_) != [0, 1]:  # a positive score must mean classes_[1] = positive
-        raise SystemExit(f"unexpected classes {model.model.classes_}")
-    labels, scores = model.predict_with_scores(pre.transform(held["text"]))
+    pipeline, manifest = load(MODELS)
+    if manifest["candidate_id"] != HISTORICAL_ID:
+        raise SystemExit("models/serving.json does not point at the historical model; run: python train.py")
+    clf = pipeline.named_steps["clf"]
+    if list(clf.classes_) != [0, 1]:  # a positive score must mean classes_[1] = positive
+        raise SystemExit(f"unexpected classes {clf.classes_}")
+    scores = clf.decision_function(pipeline[:-1].transform(held["text"].tolist()))
+    labels = labels_from_scores(scores)
     if not np.array_equal(labels, held["predicted"].to_numpy()):
-        raise SystemExit("the saved model does not reproduce models/test_predictions.csv; rerun train.py")
+        raise SystemExit("the model does not reproduce models/test_predictions.csv; rerun train.py")
     cm = confusion_matrix(held["label"], labels, labels=sorted(LABELS)).tolist()
     accuracy = float(np.mean(labels == held["label"].to_numpy()))
     if cm != metrics["confusion_matrix"]["rows_true_cols_predicted"] or not math.isclose(accuracy, metrics["accuracy"]):
-        raise SystemExit("the recomputed confusion matrix or accuracy differs from models/metrics.json")
+        raise SystemExit("the recomputed confusion matrix or accuracy differs from results/historical/metrics.json")
     held["score"] = scores
     held["words"] = held["text"].str.split().str.len()
-    return metrics, model, pre, held
+    return metrics, pipeline, manifest, held
 
 
-def score_probes(model, pre):
-    labels, scores = model.predict_with_scores(pre.transform([text for _, text in PROBES]))
+def score_probes(pipeline):
+    scores = pipeline.decision_function([text for _, text in PROBES])
+    labels = labels_from_scores(scores)
     rows = []
     for n, ((expected, text), label, score) in enumerate(zip(PROBES, labels, scores), 1):
         predicted = LABELS[int(label)]
@@ -145,14 +151,15 @@ def error_by_length(held):
     return pd.DataFrame(rows)
 
 
-def contributions(model, pre, text):
+def contributions(pipeline, text):
     """Split one decision score into intercept + weight x TF-IDF per term, and check the sum."""
-    x = pre.transform([text])
-    coef = model.model.coef_
+    clf = pipeline.named_steps["clf"]
+    x = pipeline[:-1].transform([text])
+    coef = clf.coef_
     coef = coef.toarray().ravel() if hasattr(coef, "toarray") else np.ravel(coef)
-    terms = pre.vectorizer.get_feature_names_out()
-    intercept = float(model.model.intercept_[0])
-    score = float(model.decision_function(x)[0])
+    terms = pipeline.named_steps["tfidf"].get_feature_names_out()
+    intercept = float(clf.intercept_[0])
+    score = float(clf.decision_function(x)[0])
     parts = sorted(((terms[j], float(v), float(coef[j])) for j, v in zip(x.indices, x.data)),
                    key=lambda p: -abs(p[1] * p[2]))
     shown, rest = parts[:TOP_TERMS], parts[TOP_TERMS:]
@@ -283,9 +290,9 @@ def draw_probes(probes, version, theme):
     top = 92
     bottom = top + sum(heights)
     cv = Canvas(bottom + 50, theme)
-    cv.heading("How does the model score five hand-written reviews?",
-               f"Each sentence was scored by the saved model ({version}). Expected is the sentiment the sentence "
-               "was written to express; it is not a dataset label.")
+    cv.heading("Signed decision scores of the historical model on five constructed probes",
+               f"Historical model {version} (SVC, legacy-v1 unigrams, 8,000 training reviews). Expected is the "
+               "sentiment each sentence was written to express; it is not a dataset label.")
     for x, label in ((x_in, "Input"), (x_exp, "Expected"), (x_pred, "Predicted"), (ax0, "Signed decision score")):
         cv.text(x, top - 10, label, size=SMALL, color="ink2", weight="semibold")
     cv.line([sx(0)] * 2, [top, bottom], color="axis")  # the decision boundary; value labels carry the rest
@@ -331,8 +338,8 @@ def draw_probes_narrow(probes, version, theme):
     def sx(v):
         return ax0 + (v - lo) / (hi - lo) * (ax1 - ax0)
 
-    title = wrap("How does the model score five hand-written reviews?", right - m, TITLE, "semibold")
-    subtitle = wrap(f"Scored by the saved model ({version}). Expected is what each sentence was written to "
+    title = wrap("Signed decision scores of the historical model on five constructed probes", right - m, TITLE, "semibold")
+    subtitle = wrap(f"Historical model {version}. Expected is what each sentence was written to "
                     "express, not a dataset label.", right - m, SMALL)
     note = [line for sentence in ("Label rule: above 0 is positive; 0 or below is negative.",
                                   "The score is not a probability.") for line in wrap(sentence, right - m, SMALL)]
@@ -403,8 +410,9 @@ def draw_length(table, theme):
         return px0 + v / xmax * (px1 - px0)
 
     groups = list(dict.fromkeys(table["length_group"]))
-    subtitle =("Held-out error rate within each quarter of review length, by true class. Negative reviews have the "
-                "higher error rate in all four quarters; neither class shows a clear trend with length.")
+    subtitle = ("Historical model on its internal holdout (2,000 training-partition reviews). Error rate by true class "
+                "within each length quartile: the negative-class rate is higher in all four; neither rate shows a clear "
+                "trend with length.")
     head_lines = len(wrap(subtitle, WIDTH - 32, SMALL))
     top = 50 + 17 * head_lines + 46
     bottom = top + row_h * len(groups) + 8
@@ -412,7 +420,7 @@ def draw_length(table, theme):
                     "covers one cell, treats reviews as independent and is not adjusted for multiple comparisons.",
                     WIDTH - 32, SMALL)
     cv = Canvas(bottom + 52 + 17 * (len(footnote) - 1), theme)
-    cv.heading("Is the positive lean a length effect?", subtitle)
+    cv.heading("Class-conditional error rates across review-length quartiles", subtitle)
     legend_y = 50 + 17 * head_lines + 8
     x = 16
     for cls, label in (("negative", "Negative reviews (true label), wrongly called positive"),
@@ -473,7 +481,7 @@ def draw_contributions(table, text, n_terms, theme):
     top = 50 + 17 * head_lines + 30
     bottom = top + row_h * len(table) + 8
     cv = Canvas(bottom + 34, theme)
-    cv.heading(f"Why is “{text}” scored positive?", subtitle)
+    cv.heading(f"Additive decomposition of the linear decision function: “{text}”", subtitle)
     head_y = top - 9
     cv.text(x_term, head_y, "Term", size=SMALL, color="ink2", weight="semibold")
     cv.text(x_calc, head_y, "Weight × TF-IDF", size=SMALL, color="ink2", weight="semibold")
@@ -531,9 +539,9 @@ def draw_length_narrow(table, theme):
     def sx(v):
         return px0 + v / xmax * (px1 - px0)
 
-    title = wrap("Is the positive lean a length effect?", right - m, TITLE, "semibold")
-    subtitle = wrap("Held-out error rate by true class within quarters of review length. Negative reviews have the "
-                    "higher rate in all four quarters; neither class shows a clear trend with length.", right - m, SMALL)
+    title = wrap("Class-conditional error rates across review-length quartiles", right - m, TITLE, "semibold")
+    subtitle = wrap("Historical model, internal holdout (2,000 reviews). Error rate by true class per length quartile: "
+                    "the negative-class rate is higher in all four; no clear trend with length.", right - m, SMALL)
     legend = [(cls, wrap(label, right - m - 15, SMALL)) for cls, label in (
         ("negative", "Negative reviews (true label), wrongly called positive"),
         ("positive", "Positive reviews (true label), wrongly called negative"))]
@@ -625,7 +633,7 @@ def draw_contributions_narrow(table, text, n_terms, theme):
     def sx(v):
         return x_bar0 + (v - lo) / (hi - lo) * (x_bar1 - x_bar0)
 
-    title = wrap(f"Why is “{text}” scored positive?", right - m, TITLE, "semibold")
+    title = wrap(f"Additive decomposition of the linear decision function: “{text}”", right - m, TITLE, "semibold")
     subtitle = wrap("The score is the intercept plus each vocabulary word's SVM weight × its TF-IDF value in the text. "
                     "Bars add the terms in order of size. These are contributions within this linear model, not "
                     "causal explanations of language.", right - m, SMALL)
@@ -689,7 +697,7 @@ def sha256(path):
 
 
 # The code and tracked data the figures depend on. models/ is not in git, so its files are hashed instead.
-SOURCES = ["scripts/make_readme_figures.py", "src", "train.py", "data/training_data.csv"]
+SOURCES = ["scripts/make_readme_figures.py", "src", "train.py", "data/training_data.csv", "results/historical/metrics.json"]
 
 
 def git_state():
@@ -706,11 +714,11 @@ def git_state():
 
 def main() -> None:
     OUT.mkdir(exist_ok=True)
-    metrics, model, pre, held = load_and_check()
-    version = artefact_version(MODELS / "model.joblib", MODELS / "preprocessor.joblib")
-    probes = score_probes(model, pre)
+    metrics, pipeline, manifest, held = load_and_check()
+    version = manifest["model_version"]
+    probes = score_probes(pipeline)
     length = error_by_length(held)
-    parts, n_terms, gap = contributions(model, pre, PROBES[EXPLAINED][1])
+    parts, n_terms, gap = contributions(pipeline, PROBES[EXPLAINED][1])
 
     for table, name in ((probes, "06_probe_outputs.csv"), (length, "07_error_by_length.csv"),
                         (parts, "08_score_contributions.csv")):
@@ -726,8 +734,8 @@ def main() -> None:
         written.append(draw_contributions_narrow(parts, PROBES[EXPLAINED][1], n_terms, theme)
                        .save(f"08_score_contributions_narrow_{theme}.png"))
 
-    model_files = ["models/model.joblib", "models/preprocessor.joblib"]
-    inputs = model_files + ["models/metrics.json", "models/test_predictions.csv", "data/training_data.csv"]
+    model_files = [f"models/artefacts/{version}/pipeline.joblib"]
+    inputs = model_files + ["results/historical/metrics.json", "models/test_predictions.csv", "data/training_data.csv"]
 
     def narrow(stem):
         return (f"{stem}_narrow_{{light,dark}}.png: the same data, {NARROW} CSS px wide at {NARROW_SCALE}x, "
@@ -740,12 +748,14 @@ def main() -> None:
         "git": git_state(),
         "model_version": version,
         "inputs_sha256": {name: sha256(ROOT / name) for name in inputs},
-        "sha256_note": "text files (.csv, .json, .py) are hashed with CRLF read as LF; model_version hashes the "
-                       "raw bytes of the two model files, as the API does",
+        "sha256_note": "text files (.csv, .json, .py) are hashed with CRLF read as LF; model_version is the first 12 "
+                       "hex characters of the Pipeline artefact's SHA-256, as the API reports it",
+        "legacy_model_version": "98bcdfb288fc",
+        "legacy_equivalence": "results/historical/refit_equivalence.json: parameters identical to the original two-file artefact",
         "checks_passed": [
             "seeded split (seed, test_size from metrics.json) reproduces test_predictions.csv row for row",
             "saved model reproduces all 2,000 saved held-out predictions",
-            "recomputed accuracy and confusion matrix equal metrics.json",
+            "recomputed accuracy and confusion matrix equal results/historical/metrics.json",
             f"figure 08 components sum to the model's decision score (absolute difference {gap:.1e})",
         ],
         "figures": {
