@@ -12,9 +12,9 @@ metrics.json, and the decomposed score must add up to the model's own score. Any
 stops the script. Writes to visual_outputs/:
 
     06_probe_outputs_{light,dark}.png        five hand-written probes: expected, predicted, signed decision score
-    06_probe_outputs_narrow_{light,dark}.png the same figure stacked for phone-width README columns
     07_error_by_length_{light,dark}.png      held-out error rate by review length and true class
     08_score_contributions_{light,dark}.png  one decision score split into weight x TF-IDF terms and the intercept
+    0[678]_*_narrow_{light,dark}.png         each figure again, laid out for phone-width README columns
     06_probe_outputs.csv, 07_error_by_length.csv, 08_score_contributions.csv   the numbers behind each figure
     figures_provenance.json                  commit, input checksums, model version, checks and library versions
 
@@ -59,7 +59,7 @@ WIDTH = 830  # CSS px: the README column on github.com in a desktop browser
 SCALE = 2  # device px per CSS px, so text stays sharp on high-density screens
 DPI = 96 * SCALE  # 1 CSS px = 1/96 in, so 10 pt text is 13.3 CSS px
 TITLE, BODY, SMALL = 13, 10, 9  # pt: 17.3, 13.3 and 12 CSS px
-# Figure 06 also comes stacked for narrow README columns. The README shows it below a 960 px viewport:
+# Each figure also comes in a narrow layout. The README shows it below a 960 px viewport:
 # GitHub's column is 254-364 px on phones and 406-538 px on 768-959 px screens, where its sidebar returns.
 NARROW = 360  # CSS px; the README caps it at this width
 NARROW_SCALE = 3  # device px per CSS px; most phones have 3x screens
@@ -521,6 +521,163 @@ def draw_contributions(table, text, n_terms, theme):
     return cv
 
 
+def draw_length_narrow(table, theme):
+    """Figure 07 for a phone-width column: each length quarter's label above its two intervals."""
+    m, xmax, group_h = 8, 0.25, 66
+    right = NARROW - m
+    x_rate = right - 72  # right edge of the rate column; errors / reviews end at `right`
+    px0, px1 = m + 2, x_rate - 52
+
+    def sx(v):
+        return px0 + v / xmax * (px1 - px0)
+
+    title = wrap("Is the positive lean a length effect?", right - m, TITLE, "semibold")
+    subtitle = wrap("Held-out error rate by true class within quarters of review length. Negative reviews have the "
+                    "higher rate in all four quarters; neither class shows a clear trend with length.", right - m, SMALL)
+    legend = [(cls, wrap(label, right - m - 15, SMALL)) for cls, label in (
+        ("negative", "Negative reviews (true label), wrongly called positive"),
+        ("positive", "Positive reviews (true label), wrongly called negative"))]
+    footnote = wrap("Exploratory. Quarters split all 2,000 held-out reviews by word count. Each 95% Wilson interval "
+                    "covers one cell, treats reviews as independent and is not adjusted for multiple comparisons.",
+                    right - m, SMALL)
+    groups = list(dict.fromkeys(table["length_group"]))
+    y_sub = 22 + 21 * (len(title) - 1) + 20
+    y_legend = y_sub + 16 * (len(subtitle) - 1) + 24
+    head_y = y_legend + 16 * (sum(len(lines) for _, lines in legend) - 1) + 42  # two header lines end here
+    top = head_y + 9
+    bottom = top + group_h * len(groups) + 8
+    cv = Canvas(bottom + 40 + 16 * (len(footnote) - 1) + 12, theme, width=NARROW, scale=NARROW_SCALE)
+
+    y = 22
+    for line in title:
+        cv.text(m, y, line, size=TITLE, weight="semibold")
+        y += 21
+    y = y_sub
+    for line in subtitle:
+        cv.text(m, y, line, size=SMALL, color="ink2")
+        y += 16
+    y = y_legend
+    for cls, lines in legend:
+        cv.marker(m + 5, y - 4.5, cls)
+        for line in lines:
+            cv.text(m + 15, y, line, size=SMALL, color="ink2")
+            y += 16
+    for x, y_h, label, ha in ((m, head_y, "Error rate, 95% Wilson interval", "left"), (x_rate, head_y, "Rate", "right"),
+                              (right, head_y - 15, "Errors /", "right"), (right, head_y, "reviews", "right")):
+        cv.text(x, y_h, label, size=SMALL, color="ink2", weight="semibold", ha=ha)
+    for v in np.arange(0, xmax + 1e-9, 0.05):
+        cv.line([sx(v)] * 2, [bottom, bottom + 4], color="axis")
+        cv.text(sx(v), bottom + 18, f"{v:.0%}", size=SMALL, color="ink2", ha="center")
+    for i, line in enumerate(footnote):
+        cv.text(m, bottom + 40 + 16 * i, line, size=SMALL, color="ink2")
+
+    y = top
+    cv.line([m, right], [y, y])
+    for name in groups:
+        if name == "all lengths":
+            y += 8
+            cv.line([m, right], [y, y], color="axis")
+        rows = table[table["length_group"] == name]
+        first = rows.iloc[0]
+        span = f"{first.min_words:,}–{first.max_words:,} words"
+        label, detail = (("All lengths", f"{span}, {int(rows.reviews.sum()):,} reviews") if name == "all lengths"
+                         else (span, f"{name}, {int(rows.reviews.sum()):,} reviews"))
+        weight = "semibold" if name == "all lengths" else "normal"
+        cv.text(m, y + 19, label, weight=weight)
+        cv.text(m + text_width(label, BODY, weight) + 8, y + 19, detail, size=SMALL, color="ink2")
+        rows_mid = [y + 37 + 18 * j for j in range(len(rows))]
+        for v in np.arange(0, xmax + 1e-9, 0.05):  # this group's gridlines, clear of its label line
+            cv.line([sx(v)] * 2, [rows_mid[0] - 9, rows_mid[-1] + 9], color="axis" if v == 0 else "grid")
+        for cy, r in zip(rows_mid, rows.itertuples()):
+            cv.line([sx(r.ci95_low), sx(r.ci95_high)], [cy, cy], color=MARK[r.true_class][1], width=2, z=2, cap="round")
+            cv.marker(sx(r.error_rate), cy, r.true_class)
+            cv.text(x_rate, cy + 4.5, f"{r.error_rate:.1%}", size=SMALL, ha="right")
+            cv.text(right, cy + 4.5, f"{r.errors:,} / {r.reviews:,}", size=SMALL, ha="right")
+        y += group_h
+        if name != "all lengths":
+            cv.line([m, right], [y, y])
+    return cv
+
+
+def draw_contributions_narrow(table, text, n_terms, theme):
+    """Figure 08 for a phone-width column: each term over its weight x TF-IDF, beside its running-total bar."""
+    m, row_h, total_h, bar_h = 8, 38, 46, 12
+    right = NARROW - m
+    run = [0.0] + table["running_total"].tolist()[:-1]
+    lo = min(0.0, min(run)) - 0.05
+    hi = max(run) + 0.05
+
+    def cell(r):
+        """The left cell: what the row is, then how its contribution is made."""
+        if r.kind == "term":  # four decimals, so the shown factors multiply back to the shown contribution
+            return r.component, "semibold", f"{signed(r.weight, 4)} × {r.tfidf:.4f}"
+        if r.kind == "other":
+            return "other terms", "normal", (f"none (all {n_terms} shown)" if n_terms <= TOP_TERMS
+                                             else f"{n_terms - TOP_TERMS} smaller terms")
+        return "intercept", "normal", "fitted bias"
+
+    rows = [r for r in table.itertuples() if r.kind != "total"]
+    total = next(r for r in table.itertuples() if r.kind == "total")
+    cells = [cell(r) for r in rows]
+    x_bar0 = m + max(max(text_width(name, BODY, w), text_width(calc, SMALL)) for name, w, calc in cells) + 14
+    x_bar1 = right - 50
+
+    def sx(v):
+        return x_bar0 + (v - lo) / (hi - lo) * (x_bar1 - x_bar0)
+
+    title = wrap(f"Why is “{text}” scored positive?", right - m, TITLE, "semibold")
+    subtitle = wrap("The score is the intercept plus each vocabulary word's SVM weight × its TF-IDF value in the text. "
+                    "Bars add the terms in order of size. These are contributions within this linear model, not "
+                    "causal explanations of language.", right - m, SMALL)
+    y_sub = 22 + 21 * (len(title) - 1) + 20
+    head_y = y_sub + 16 * (len(subtitle) - 1) + 42  # two header lines end here
+    top = head_y + 9
+    total_top = top + row_h * len(rows) + 8
+    bottom = total_top + total_h
+    cv = Canvas(bottom + 30, theme, width=NARROW, scale=NARROW_SCALE)
+
+    y = 22
+    for line in title:
+        cv.text(m, y, line, size=TITLE, weight="semibold")
+        y += 21
+    y = y_sub
+    for line in subtitle:
+        cv.text(m, y, line, size=SMALL, color="ink2")
+        y += 16
+    cv.text(m, head_y - 15, "Term", size=SMALL, color="ink2", weight="semibold")
+    cv.text(m, head_y, "weight × TF-IDF", size=SMALL, color="ink2")
+    cv.text(x_bar0, head_y, "Running total", size=SMALL, color="ink2", weight="semibold")
+    cv.text(right, head_y, "Contribution", size=SMALL, color="ink2", weight="semibold", ha="right")
+    for v in np.arange(0, hi, 0.25):
+        cv.line([sx(v)] * 2, [top, bottom], color="axis" if v == 0 else "grid")
+        cv.text(sx(v), bottom + 17, signed(v) if v else "0", size=SMALL, color="ink2", ha="center")
+
+    y = top
+    cv.line([m, right], [y, y])
+    for i, (r, (name, weight, calc)) in enumerate(zip(rows, cells)):
+        cy = y + 19
+        cv.text(m, y + 16, name, weight=weight)
+        cv.text(m, y + 31, calc, size=SMALL, color="ink2")
+        start, end = run[i], run[i] + r.contribution
+        if r.contribution != 0:
+            cv.bar(sx(start), sx(end), cy, bar_h, "pos" if r.contribution > 0 else "neg")
+        if i + 1 < len(rows):  # connector to the next step's start
+            cv.line([sx(end)] * 2, [cy + bar_h / 2, cy + row_h - bar_h / 2], color="axis", z=2)
+        cv.text(right, cy + 4.5, "0" if r.contribution == 0 else signed(r.contribution, 3), ha="right")
+        y += row_h
+
+    cv.line([m, right], [total_top, total_top], color="axis")
+    cv.text(m, total_top + 17, "Signed decision score", weight="semibold", knockout=True)
+    cv.text(right, total_top + 17, signed(total.contribution, 3), weight="semibold", ha="right")
+    cy = total_top + 32
+    cv.bar(sx(0), sx(total.contribution), cy, bar_h, "total", square_at=sx(0))
+    verdict = "above 0, so labelled positive" if total.contribution > 0 else "0 or below, so labelled negative"
+    if sx(total.contribution) + 8 + text_width(verdict, SMALL) > right:
+        verdict = "above 0: positive" if total.contribution > 0 else "0 or below: negative"
+    cv.text(sx(total.contribution) + 8, cy + 4.5, verdict, size=SMALL, color="ink2", knockout=True)
+    return cv
+
+
 # ----------------------------------------------------------------------------- outputs
 
 def sha256(path):
@@ -563,11 +720,19 @@ def main() -> None:
         written.append(draw_probes(probes, version, theme).save(f"06_probe_outputs_{theme}.png"))
         written.append(draw_probes_narrow(probes, version, theme).save(f"06_probe_outputs_narrow_{theme}.png"))
         written.append(draw_length(length, theme).save(f"07_error_by_length_{theme}.png"))
+        written.append(draw_length_narrow(length, theme).save(f"07_error_by_length_narrow_{theme}.png"))
         written.append(draw_contributions(parts, PROBES[EXPLAINED][1], n_terms, theme)
                        .save(f"08_score_contributions_{theme}.png"))
+        written.append(draw_contributions_narrow(parts, PROBES[EXPLAINED][1], n_terms, theme)
+                       .save(f"08_score_contributions_narrow_{theme}.png"))
 
     model_files = ["models/model.joblib", "models/preprocessor.joblib"]
     inputs = model_files + ["models/metrics.json", "models/test_predictions.csv", "data/training_data.csv"]
+
+    def narrow(stem):
+        return (f"{stem}_narrow_{{light,dark}}.png: the same data, {NARROW} CSS px wide at {NARROW_SCALE}x, "
+                "for README columns on viewports below 960 px")
+
     provenance = {
         "generated_by": "scripts/make_readme_figures.py",
         "script_sha256": sha256(Path(__file__).resolve()),
@@ -586,19 +751,19 @@ def main() -> None:
         "figures": {
             "06_probe_outputs": {"data": "06_probe_outputs.csv", "derived_from": model_files + ["PROBES in the script"],
                                  "note": "hand-written probes; expected = the sentiment each was written to express",
-                                 "narrow_layout": f"06_probe_outputs_narrow_{{light,dark}}.png: the same data, "
-                                                  f"{NARROW} CSS px wide at {NARROW_SCALE}x, for README columns "
-                                                  "on viewports below 960 px"},
+                                 "narrow_layout": narrow("06_probe_outputs")},
             "07_error_by_length": {"data": "07_error_by_length.csv",
                                    "derived_from": ["models/test_predictions.csv (text, true label, prediction)"],
                                    "verified_against": [name for name in inputs if name != "models/test_predictions.csv"],
                                    "binning": "quartiles of whitespace word count over all 2,000 held-out reviews "
                                               "(pandas.qcut, both classes pooled)",
-                                   "interval": "95% Wilson score interval per cell; treats reviews as independent"},
+                                   "interval": "95% Wilson score interval per cell; treats reviews as independent",
+                                   "narrow_layout": narrow("07_error_by_length")},
             "08_score_contributions": {"data": "08_score_contributions.csv", "derived_from": model_files,
                                        "text": PROBES[EXPLAINED][1],
                                        "method": "contribution = SVM weight x TF-IDF value; plus intercept; "
-                                                 f"terms beyond the largest {TOP_TERMS} summed as other terms"},
+                                                 f"terms beyond the largest {TOP_TERMS} summed as other terms",
+                                       "narrow_layout": narrow("08_score_contributions")},
         },
         "environment": {"python": platform.python_version(), "numpy": np.__version__, "pandas": pd.__version__,
                         "scikit-learn": sklearn.__version__, "matplotlib": matplotlib.__version__,
