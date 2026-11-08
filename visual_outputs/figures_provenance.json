@@ -1,9 +1,9 @@
 {
   "generated_by": "scripts/make_readme_figures.py",
-  "script_sha256": "5af6e028435cb5bc69b2e631d4399066b1162276cc5527758e2a22b646889c90",
-  "generated_utc": "2026-11-08T11:27:09Z",
+  "script_sha256": "bec90014ae98677c34bd591341c1b454bbdb64992cf0c7b9c1bc971cb1cefa36",
+  "generated_utc": "2026-11-08T12:00:06Z",
   "git": {
-    "commit": "1e8144e0e8021f2251e47ce57532cd086970f3e3",
+    "commit": "f469571488cb646417be9cc88ab9e7a52cafd094",
     "sources": [
       "scripts/make_readme_figures.py",
       "src",
@@ -35,7 +35,8 @@
         "models/preprocessor.joblib",
         "PROBES in the script"
       ],
-      "note": "hand-written probes; expected = the sentiment each was written to express"
+      "note": "hand-written probes; expected = the sentiment each was written to express",
+      "narrow_layout": "06_probe_outputs_narrow_{light,dark}.png: the same data, 360 CSS px wide at 3x, for README columns on viewports below 960 px"
     },
     "07_error_by_length": {
       "data": "07_error_by_length.csv",

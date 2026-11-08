@@ -25,12 +25,14 @@ The held-out reviews are a stratified random 20% (seed 42) of a 10,000-review sa
 
 ## Error analysis behind the README figures
 
-The figures come from `scripts/make_readme_figures.py`, which writes each one in a light and a dark version, the numbers behind it as CSV, and [`figures_provenance.json`](figures_provenance.json). That file records the commit the figures were made from, the SHA-256 of every input, the model version (`98bcdfb288fc`), the checks that passed and the library versions.
+The figures come from `scripts/make_readme_figures.py`, which writes each one in a light and a dark version (figure 06 also in a narrow layout for phone screens), the numbers behind it as CSV, and [`figures_provenance.json`](figures_provenance.json). That file records the commit the figures were made from, the SHA-256 of every input, the model version (`98bcdfb288fc`), the checks that passed and the library versions.
 
 ### Hand-written probes (figure 06)
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="06_probe_outputs_dark.png">
+  <source media="(min-width: 960px) and (prefers-color-scheme: dark)" srcset="06_probe_outputs_dark.png">
+  <source media="(max-width: 959px) and (prefers-color-scheme: dark)" srcset="06_probe_outputs_narrow_dark.png" width="360">
+  <source media="(max-width: 959px)" srcset="06_probe_outputs_narrow_light.png" width="360">
   <img src="06_probe_outputs_light.png" width="830" alt="Five hand-written reviews with expected label, predicted label and signed decision score; only 'The movie was not good.' is wrong, scored +0.30.">
 </picture>
 

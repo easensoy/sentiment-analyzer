@@ -7,7 +7,9 @@ A TF-IDF + linear SVM sentiment classifier for English movie reviews, built from
 **Accuracy 0.8935** (95% CI 0.879–0.906) and **macro F1 0.8934** on 2,000 held-out reviews, 1,000 per class. The held-out reviews come from a random split *inside* IMDB's train set, not the official test set. Reviews of one movie can sit on both sides, so these numbers are likely optimistic ([protocol](#evaluation-protocol-and-limitations)).
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="visual_outputs/06_probe_outputs_dark.png">
+  <source media="(min-width: 960px) and (prefers-color-scheme: dark)" srcset="visual_outputs/06_probe_outputs_dark.png">
+  <source media="(max-width: 959px) and (prefers-color-scheme: dark)" srcset="visual_outputs/06_probe_outputs_narrow_dark.png" width="360">
+  <source media="(max-width: 959px)" srcset="visual_outputs/06_probe_outputs_narrow_light.png" width="360">
   <img src="visual_outputs/06_probe_outputs_light.png" width="830" alt="Table of five hand-written reviews with expected label, predicted label and signed decision score. 'An absolute masterpiece: superb acting and a story I loved from start to finish.': expected positive, predicted positive, +1.12. 'Boring, predictable and badly acted. A total waste of two hours.': expected negative, predicted negative, −3.86. 'I expected to hate it, but it turned out to be surprisingly good.': expected positive, predicted positive, +0.51. 'The movie was good.': expected positive, predicted positive, +0.67. 'The movie was not good.': expected negative, predicted positive, +0.30, wrong.">
 </picture>
 
