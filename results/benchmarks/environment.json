@@ -1,0 +1,114 @@
+{
+  "hardware": {
+    "machine": "AMD64",
+    "system": "Windows 11",
+    "logical_cpus": 22,
+    "python": "3.15.2",
+    "cpu": "Intel(R) Core(TM) Ultra 7 165H",
+    "physical_cores": 16,
+    "base_clock_mhz": 3800,
+    "ram_gb": 31.5,
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "scikit_learn": "1.9.1",
+    "fastapi": "0.100.0",
+    "uvicorn": "0.23.1"
+  },
+  "thread_settings": {
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+  },
+  "placement": {
+    "affinity_logical_cpus": [
+      0,
+      1,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+    ],
+    "priority_class": "above normal",
+    "note": "benchmark processes only; other processes on the host were not changed"
+  },
+  "train": {
+    "recorded_utc": "2026-11-09T01:58:24Z",
+    "background_before": {
+      "host_cpu_percent": 17.2,
+      "busy_logical_cpus": 3.8
+    },
+    "background_after": {
+      "host_cpu_percent": 14.2,
+      "busy_logical_cpus": 3.1
+    },
+    "repeats": 3,
+    "repeats_svc_uni_full": 1,
+    "process_per_run": true,
+    "order": "repeats interleaved across configurations",
+    "process_failures": []
+  },
+  "inference": {
+    "recorded_utc": "2026-11-09T01:25:22Z",
+    "background_before": {
+      "host_cpu_percent": 25.0,
+      "busy_logical_cpus": 5.5
+    },
+    "background_after": {
+      "host_cpu_percent": 36.2,
+      "busy_logical_cpus": 8.0
+    },
+    "workload": "2000 official training-partition reviews (seed 7)",
+    "workload_chars": {
+      "median": 965,
+      "p95": 3442
+    },
+    "order": "all configurations loaded once; loads, latency runs and batch passes in rounds over every configuration, alternating direction",
+    "load_repeats": 5,
+    "latency": "200 warm-up requests, then 3 runs of 1000 sequential requests (batch size 1)",
+    "batch": "batch sizes [64, 1024], 5 passes over the workload each"
+  },
+  "http": {
+    "recorded_utc": "2026-11-09T01:37:13Z",
+    "background_before": {
+      "host_cpu_percent": 29.6,
+      "busy_logical_cpus": 6.5
+    },
+    "background_after": {
+      "host_cpu_percent": 17.6,
+      "busy_logical_cpus": 3.9
+    },
+    "server": "uvicorn, one worker process, FastAPI default thread pool for the sync handler",
+    "http_stack": {
+      "uvicorn": "0.23.1",
+      "h11": "0.16.0",
+      "httptools": null,
+      "uvloop": null,
+      "fastapi": "0.100.0",
+      "starlette": "0.27.0",
+      "pydantic": "2.14.3",
+      "anyio": "4.16.0",
+      "httpx": "0.27.2"
+    },
+    "client": "httpx.AsyncClient on the same host, keep-alive connections, closed loop",
+    "concurrency": [
+      1,
+      2,
+      4,
+      8,
+      16,
+      32
+    ],
+    "warmup_requests": 200,
+    "level_warmup_s": 2.0,
+    "level_measure_s": 15.0,
+    "sweeps": 2,
+    "timeout_s": 30.0,
+    "cpu_note": "server and client CPU are sampled at the boundaries of each level's measurement window; server CPU per 1,000 requests divides the server's CPU in the window by the requests completed in it; a client CPU utilisation near 1.0 would mean the single-threaded client limited throughput"
+  }
+}
