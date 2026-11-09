@@ -1,4 +1,6 @@
 """Shared fixtures: a tiny, deterministic model, so tests run in milliseconds without models/."""
+import os
+
 import pytest
 
 from src.model import SentimentModel
@@ -51,3 +53,15 @@ def model_dir(tmp_path, tiny_pipeline):
     publish(tiny_pipeline, tmp_path / "models", candidate_id="tiny-test-model", config=CONFIG,
             training={"protocol": "unit test", "rows": 10})
     return tmp_path / "models"
+
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    """On GitHub Actions, also report each failure as an error annotation: the checks API exposes annotations
+    publicly, whereas job logs need a signed-in account."""
+    outcome = yield
+    report = outcome.get_result()
+    if report.failed and os.environ.get("GITHUB_ACTIONS") == "true":
+        message = str(report.longrepr)[-3000:].replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+        title = report.nodeid.replace("%", "%25").replace(":", "%3A").replace(",", "%2C")  # property escaping
+        item.config.pluginmanager.get_plugin("terminalreporter").write_line(f"::error title={title}::{message}")
