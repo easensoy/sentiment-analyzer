@@ -52,7 +52,7 @@ def sig(v: float, digits: int = 3) -> str:
 
 
 def ratio(v: float) -> str:
-    return f"{sig(v, 2)}×"
+    return f"{sig(v, 3 if v >= 10 else 2)}×"
 
 
 # ----------------------------------------------------------------------------- inputs
@@ -392,7 +392,8 @@ def table_inference() -> str:
             "[range at 1,024] |", "|---|---:|---:|---:|---|---:|---|---|"]
     for cid in trained():
         r = inf.loc[cid]
-        rows.append(f"| `{cid}` | {r['artefact_mb']:.1f} | {int(r['n_support_vectors']):,} | {r['load_s_median']:.2f} "
+        support = f"{int(r['n_support_vectors']):,}" if r["n_support_vectors"] else "—"
+        rows.append(f"| `{cid}` | {r['artefact_mb']:.1f} | {support} | {r['load_s_median']:.2f} "
                     f"| {r['latency_ms_p50']:.2f} / {r['latency_ms_p95']:.2f} / {r['latency_ms_p99']:.2f} "
                     f"| {r['throughput_b64_per_s']:,.0f} | {r['throughput_b1024_per_s']:,.0f} "
                     f"[{r['throughput_b1024_min']:,.0f}–{r['throughput_b1024_max']:,.0f}] "
