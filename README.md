@@ -1,248 +1,240 @@
-# TF-IDF linear sentiment classifiers on the official IMDB test partition: a controlled comparison
+# Accuracy and compute cost of TF-IDF linear sentiment classifiers on the official IMDB test partition
 
 [![Python CI](https://github.com/easensoy/sentiment-analyzer/actions/workflows/python-ci.yml/badge.svg)](https://github.com/easensoy/sentiment-analyzer/actions/workflows/python-ci.yml)
 
-**Research question.** On the official IMDB test partition (Maas et al., 2011), how do TF-IDF linear classifiers differ in accuracy and class-conditional error when the estimator, the feature representation, the text-cleaning version and the training-set size are changed one at a time, and how does the repository's historical model compare?
+**Research question.** On the official IMDB test partition (Maas et al., 2011), how do TF-IDF linear classifiers
+differ in accuracy and class-conditional error when the estimator, the feature representation, the text-cleaning
+version and the training-set size are changed one at a time, and what does each configuration cost to train and to
+serve?
 
-**Status, 2026-11-08.** *Completed:* development-only model selection on the official training partition; a protocol freeze pushed before any test scoring ([`387779a`](https://github.com/easensoy/sentiment-analyzer/commit/387779a), locked in [`7112e22`](https://github.com/easensoy/sentiment-analyzer/commit/7112e22)); one scoring of eight frozen candidates on the 25,000 official test reviews; paired block-bootstrap comparisons; duplicate and overlap audits; versioned Pipeline artefacts with validated manifests. *Provisional:* a 237-case behavioural suite whose labels no person has adjudicated. *Not executed:* the Claude baseline (runner implemented and validated offline; no spending limit has been set).
+Eight configurations, including the repository's historical model and a majority-class rule, were fixed in a
+protocol that was pushed before the 25,000 official test reviews were scored once. Training and serving costs were
+measured afterwards on the frozen artefacts, single-threaded, on one laptop CPU.
 
-[Principal findings](#principal-findings) · [Configuration](#experimental-configuration) · [Results](#results-on-the-official-test-partition) · [Behavioural suite](#behavioural-suite-provisional-labels-not-adjudicated) · [Reproduction](#reproduction) · [Model card](#model-card) · [Limitations](#methodological-limitations) · [Phone-width figures](docs/narrow-figures.md)
+[Findings](#findings) · [Results](#results) · [Design](#implementation-and-design) · [Training, serving and
+cost](#training-serving-and-cost) · [Behavioural robustness](#behavioural-robustness-provisional) ·
+[Limitations](#limitations-and-validity-threats) · [Documentation](#documentation)
 
-## Principal findings
+## Findings
+
+Timings are single-threaded on a performance core of an Intel Core Ultra 7 165H under Windows 11, measured while
+other processes shared the host ([conditions](docs/BENCHMARKS.md#environment-and-conditions)). Accuracy intervals are
+95% block-bootstrap intervals on the 25,000 official test reviews; cost ranges span repeated passes.
+
+1. **The served historical model is dominated on accuracy and on compute.** `svc_uni_8k_historical` scores 86.85%
+   [86.32–87.37] and needs 5.30 CPU seconds per 1,000 predictions, measured in process on 2,000 training-partition
+   reviews in batches of 1,024 (median of five passes). The final model, `linsvc_bi_v2_full`, scores 90.26%
+   [89.80–90.70], +3.42 pp [+3.05, +3.78] in the paired comparison, at 0.492 s; the historical model needed 10.1–11.5
+   times as much CPU in each pass. The historical model is a linear-kernel `SVC`, which libsvm scores by evaluating
+   the kernel against each of its 4,727 support vectors; the LinearSVC models compute one sparse dot product.
+2. **Word bigrams buy accuracy at a moderate cost; cleaning v2 adds cost without measurable accuracy.** In the
+   pre-specified LinearSVC comparisons, 1–2-grams add +1.66 pp [+1.39, +1.93] over unigrams for 2.4 times the batch
+   CPU per prediction (0.320 against 0.133 s per 1,000), 3.6 times the fit time and 3.9 times the fit's memory
+   increment. Cleaning v2, part of the final model, changes accuracy by −0.01 pp [−0.18, +0.16] for 1.48–1.60 times
+   the batch CPU of `linsvc_bi_full` in each pass and 1.31 times its fit time, so `linsvc_bi_full` dominates the final
+   model on point estimates. The final model was selected on development accuracy before any cost was measured, and
+   this comparison is post hoc.
+3. **Over HTTP, request handling costs more CPU than the linear models' own scoring.** Behind one uvicorn worker on
+   loopback, the final model's server uses 2.1 ms of CPU per request at its peak throughput (2.1–2.5 ms over all
+   concurrency levels and sweeps), against an in-process single-review p50 of 0.90 ms and 0.49 ms of CPU per
+   prediction in batches. One worker saturates about one core at 544 requests/s (sweeps 540–549, concurrency 16, p95
+   34.5 ms); the historical SVC, whose own scoring dominates at 8.7 ms of server CPU per request, saturates at 117
+   requests/s. None of the 203,384 requests failed.
 
 <picture>
-  <source media="(min-width: 960px) and (prefers-color-scheme: dark)" srcset="visual_outputs/09_paired_differences_dark.png">
-  <source media="(max-width: 959px) and (prefers-color-scheme: dark)" srcset="visual_outputs/09_paired_differences_narrow_dark.png" width="360">
-  <source media="(max-width: 959px)" srcset="visual_outputs/09_paired_differences_narrow_light.png" width="360">
-  <img src="visual_outputs/09_paired_differences_light.png" width="830" alt="Forest plot of seven paired accuracy differences on the official IMDB test partition, with 95% and Bonferroni-adjusted block-bootstrap intervals: training-set size +1.54 percentage points for SVC and +1.80 for LinearSVC; LinearSVC minus logistic regression −0.10; SVC minus LinearSVC −0.22; word 1–2-grams over unigrams +1.66; cleaning v2 over legacy-v1 −0.01; final model minus historical model +3.42.">
+  <source media="(min-width: 960px) and (prefers-color-scheme: dark)" srcset="visual_outputs/11_accuracy_vs_compute_dark.png">
+  <source media="(max-width: 959px) and (prefers-color-scheme: dark)" srcset="visual_outputs/11_accuracy_vs_compute_narrow_dark.png" width="360">
+  <source media="(max-width: 959px)" srcset="visual_outputs/11_accuracy_vs_compute_narrow_light.png" width="360">
+  <img src="visual_outputs/11_accuracy_vs_compute_light.png" width="830" alt="Scatter plot of official-test accuracy against CPU seconds per 1,000 predictions on a log scale, with 95% accuracy intervals and pass ranges: LinearSVC, unigrams, 8k 86.80% at 0.117 s; logistic regression 88.71% at 0.125 s; LinearSVC, unigrams, 25k 88.61% at 0.133 s; LinearSVC, 1–2-grams 90.27% at 0.320 s; final model, 1–2-grams with cleaning v2, 90.26% at 0.492 s; historical SVC 86.85% at 5.30 s; SVC, 25k 88.39% at 12.1 s. The dashed Pareto line joins LinearSVC 8k, logistic regression and LinearSVC with 1–2-grams.">
 </picture>
 
-Empirical findings on the 25,000 official test reviews; intervals are 95% stratified block-bootstrap percentile intervals unless stated otherwise.
+Accuracy comes from the single scoring run on the 25,000 official test reviews and CPU time from 2,000
+training-partition reviews, so each axis uses one population for every configuration. The three unigram LinearSVC and
+logistic-regression configurations cost the same to within the process clock's resolution, so the left end of the post
+hoc Pareto set is not resolved. Two comparisons are resolved: each SVC is less accurate than `linsvc_bi_full`, with
+non-overlapping intervals, at 17 and 38 times its CPU time; and `linsvc_bi_full` matches the final model's accuracy at
+0.65 times its CPU time. Phone-width layout: [narrow figures](docs/narrow-figures.md).
 
-1. **The historical model is weaker on the official test partition than its internal holdout indicated.** The same artefact scores 86.85% accuracy (86.32–87.37%), against 89.35% (87.92–90.63%, Wilson) on its internal holdout. Its class-conditional error rates are 13.32% for negative and 12.98% for positive reviews: the 6.5-point asymmetry measured internally (13.9% vs 7.4%) is not reproduced (difference +0.34 points, −0.72 to +1.38; exploratory, post hoc).
-2. **Training-set size and word bigrams each add about 1.5–1.8 points; the estimator and the cleaning version add nothing detectable.** Training on all 25,000 instead of 8,000 reviews adds +1.54 points for SVC at C=1 (+1.20 to +1.88) and +1.80 for LinearSVC at fixed C (+1.51 to +2.12). Word 1–2-grams add +1.66 over unigrams (+1.39 to +1.93). LinearSVC and logistic regression differ by −0.10 (−0.21 to +0.01), and the untuned SVC and LinearSVC by −0.22 (−0.46 to +0.03). Cleaning v2 changes accuracy by −0.01 (−0.18 to +0.16), although it led legacy-v1 by 0.22 points on development folds. The two size effects, the bigram effect and the combined difference in finding 3 also exclude zero under Bonferroni adjustment for the seven comparisons.
-3. **The development-selected final model gains 3.42 points over the historical model.** `linsvc_bi_v2_full`, named the final model by the frozen protocol from development accuracy alone, reaches 90.26% (89.80–90.70%), +3.42 points over the historical model (+3.05 to +3.78). This is a combined change of estimator, regularisation, features, cleaning and training-set size; findings 2 attribute its parts.
-4. **Errors concentrate near the rating boundary.** For the final model, 21.4% of reviews rated 4 and 18.9% of those rated 7 are misclassified, against 4.7% at rating 1 and 6.0% at rating 10 (pre-specified rating slices; `results/official_test/slices.csv`). Class-conditional error rates differ by less than 1 point for the final model (10.14% vs 9.34%).
+## Results
 
-These estimates characterise the official test partition, whose movies are disjoint from the training partition's. They are not comparable with published results that use other training sets, preprocessing or protocols.
+Accuracy and class-conditional error on the 25,000 official test reviews, from the single scoring run, with 95%
+block-bootstrap intervals. Fit: complete `Pipeline.fit` in seconds, median of three runs in fresh processes (one for
+`svc_uni_full`). Fit memory: increase of the process's peak working set during the fit. CPU s per 1,000 predictions:
+in-process batch scoring at batch size 1,024, including cleaning and TF-IDF. p50 / p95: single-review requests in
+process, without HTTP. Timings are single-threaded on the performance cores of an Intel Core Ultra 7 165H with
+other processes running ([conditions](docs/BENCHMARKS.md#environment-and-conditions)). Bold: Pareto-efficient in
+accuracy versus CPU time, computed post hoc on point estimates. Macro F1, paired comparisons and sensitivity
+analyses: [supplementary results](docs/RESULTS.md).
 
-## Experimental configuration
+<!-- table:summary -->
+| Configuration | Model | Accuracy % [95% CI] | Error, negative / positive % | Fit, s | Fit memory, MB | CPU s per 1,000 predictions | Single-request p50 / p95, ms |
+|---|---|---|---|---:|---:|---:|---|
+| `majority` | majority class | 50.00 [49.94–50.06] | 0.00 / 100.00 | — | — | — | — |
+| `svc_uni_8k_historical` | SVC, unigrams, legacy-v1, C=1, 8k | 86.85 [86.32–87.37] | 13.32 / 12.98 | 41.2 | 222 | 5.30 | 7.41 / 10.41 |
+| `svc_uni_full` | SVC, unigrams, legacy-v1, C=1, 25k | 88.39 [87.90–88.88] | 11.06 / 12.16 | 641 | 415 | 12.1 | 16.65 / 23.21 |
+| **`logreg_uni_full`** | LogReg, unigrams, legacy-v1, C=2, 25k | 88.71 [88.21–89.20] | 11.14 / 11.45 | 4.00 | 159 | 0.125 | 0.57 / 0.95 |
+| `linsvc_uni_full` | LinearSVC, unigrams, legacy-v1, C=0.125, 25k | 88.61 [88.11–89.10] | 11.44 / 11.34 | 3.30 | 154 | 0.133 | 0.59 / 0.95 |
+| **`linsvc_uni_8k`** | LinearSVC, unigrams, legacy-v1, C=0.125, 8k | 86.80 [86.26–87.33] | 14.33 / 12.06 | 1.07 | 56 | 0.117 | 0.55 / 0.93 |
+| **`linsvc_bi_full`** | LinearSVC, 1–2-grams, legacy-v1, C=1, 25k | 90.27 [89.80–90.72] | 9.94 / 9.52 | 12.0 | 602 | 0.320 | 0.71 / 1.38 |
+| `linsvc_bi_v2_full` | LinearSVC, 1–2-grams, v2, C=0.5, 25k | 90.26 [89.80–90.70] | 10.14 / 9.34 | 15.8 | 593 | 0.492 | 0.90 / 1.94 |
+<!-- /table:summary -->
+
+The historical model's original evaluation, on an internal holdout that did not separate movies between training and
+evaluation, reported 89.35% (Wilson interval 87.92–90.63%), 2.50 points above its official-test accuracy. For the
+final model, errors concentrate near the rating boundary: 21.4% of reviews rated 4 and 18.9% of those rated 7 are
+misclassified, against 4.7% at rating 1 and 6.0% at rating 10. Removing the 124 test reviews that overlap the training
+partition changes no trained configuration's accuracy by more than 0.05 points.
+
+## Implementation and design
 
 | Component | Specification |
 |---|---|
-| Data | Large Movie Review Dataset v1.0: official training and test partitions, 25,000 reviews each, 12,500 per class; star ratings 1–4 (negative) and 7–10 (positive); reviews rated 5–6 are absent by construction. |
-| Sources | fast.ai mirror of the aclImdb archive (review ids, ratings) and Hugging Face `stanfordnlp/imdb` parquet files at revision `e6281661`; both pinned by SHA-256, with identical (text, label) multisets per partition. |
-| Development | Official training partition only: five folds of 100-id blocks per label (2,500 reviews per class per fold); the vectoriser is refitted inside each training fold; C is chosen by the highest mean validation accuracy, ties to the smaller C. |
-| Final evaluation | Official test partition, scored once, after the protocol freeze. |
-| Features | `TfidfVectorizer` with scikit-learn defaults (raw term frequency, smoothed IDF, L2 normalisation) over word unigrams or word 1–2-grams, `min_df=1`, after cleaning version `legacy-v1` or `v2`. |
-| Estimators | `SVC(kernel="linear")`, `LinearSVC` (squared hinge loss), `LogisticRegression` (liblinear), majority class. |
-| Training sets | All 25,000 training reviews, or the historical model's 8,000 (a subset of the same partition). |
-| Uncertainty | Stratified block bootstrap over review-id order, 30 ids per block within each label, 10,000 replicates, percentile intervals; example-level and 60-id blocks as sensitivity analyses. |
+| Data | Large Movie Review Dataset v1.0: official training and test partitions, 25,000 reviews each, 12,500 per class, star ratings 1–4 (negative) and 7–10 (positive). Sources: the fast.ai mirror of the aclImdb archive and the Hugging Face `stanfordnlp/imdb` parquet files at revision `e6281661`, pinned by SHA-256 and verified to contain identical (text, label) multisets. |
+| Models | One scikit-learn `Pipeline` per configuration: cleaning (`legacy-v1` or `v2`, `src/cleaning.py`), `TfidfVectorizer` over word unigrams or 1–2-grams (scikit-learn defaults, `min_df=1`), then `SVC(kernel="linear")`, `LinearSVC` or `LogisticRegression` (liblinear). Each artefact carries a manifest with its configuration, training-set hash, SHA-256 and library versions, and is validated when loaded. |
+| Development | Official training partition only: five folds of 100-id blocks per label, the vectoriser refitted in each training fold, C chosen by mean validation accuracy. The final model, `linsvc_bi_v2_full`, was named from development accuracy alone. |
+| Evaluation | One scoring of the official test partition after the protocol freeze. 95% intervals from a stratified bootstrap of 30-id blocks (10,000 replicates), which approximates resampling by movie; paired differences share the replicates; Bonferroni adjustment for the seven pre-specified comparisons. |
+| Efficiency benchmark | Added after scoring; frozen configurations only. Workload: 2,000 official training-partition reviews. Numerical libraries pinned to one thread; benchmark processes on the performance cores at above-normal priority; each training run in a fresh process; HTTP served by uvicorn with one worker over loopback, under a closed-loop concurrency sweep. Boundaries and conditions: [`docs/BENCHMARKS.md`](docs/BENCHMARKS.md). |
+| Serving | FastAPI `POST /predict` returns the label, the signed decision score and the artefact identifier; the server refuses an artefact whose manifest, SHA-256, structure or scikit-learn version does not match ([model card](docs/MODEL_CARD.md#serving-contract)). |
 
-Cleaning `legacy-v1` reproduces the historical path: `<br />` tags become spaces, then every character other than ASCII letters and whitespace is deleted and the text lower-cased. Cleaning `v2` decodes HTML entities and removes tags, folds accents (NFKD), expands *n't* to *not*, replaces rather than deletes punctuation, and keeps digits. Both are implemented once in `src/cleaning.py` and applied inside the served Pipeline, so training and serving share one path.
+**Provenance.** The protocol ([`protocol_v1.json`](protocol/protocol_v1.json)) and the SHA-256 lock of every file the
+evaluation depends on ([`LOCK.json`](protocol/LOCK.json)) were pushed up to commit
+[`88d8102`](https://github.com/easensoy/sentiment-analyzer/commit/88d810245a81e985f03b6ad343e309532a9c15b1), whose CI
+run started at 19:38:22 UTC on 2026-11-08 ([run
+42516034238](https://github.com/easensoy/sentiment-analyzer/actions/runs/42516034238)); scoring started at 19:38:39
+UTC. The scoring log ([`scoring_log.json`](results/official_test/scoring_log.json)) records `88d8102` with uncommitted
+changes confined to presentation files outside the lock. The repository's history has since been rewritten, so
+`88d8102` is no longer an ancestor of `main`; the commit on `main` with tree `145748a5dce3` holds the same files
+(`git log --format='%h %T' | grep 145748a5`). CI verifies the lock on every push. The class-asymmetry analysis and the
+efficiency benchmark were added after scoring and are reported as post hoc.
 
-## Method
+## Training, serving and cost
 
-Each candidate maps a review $x$ to a signed decision score
-
-$$f(x) = \mathbf{w}^\top \phi(x) + b,$$
-
-where $\phi(x)$ is the L2-normalised TF-IDF vector of the cleaned text. The label is $\hat y = \mathbb{1}[f(x) > 0]$; an exact zero is negative. For the linear-kernel SVC, $\mathbf{w} = \sum_i \alpha_i y_i \phi(x_i)$ over the support vectors, so every candidate's score is linear in $\phi(x)$ and decomposes exactly into per-term contributions $w_j \phi_j(x)$ plus $b$ (figure 08).
-
-For predictions on the $n_c$ test reviews of true class $c$, the class-conditional error rate is
-
-$$e_c = \frac{1}{n_c} \sum_{i:\, y_i = c} \mathbb{1}[\hat y_i \neq c].$$
-
-For a paired comparison of candidates A and B on the same reviews, the estimand is $\Delta = \mathrm{acc}_A - \mathrm{acc}_B$. Each bootstrap replicate $b$ draws, within each label, as many 30-id blocks as that label has, with replacement, and evaluates both candidates on the same multiset of reviews, giving $\Delta^{*}_b$; the 95% interval is the 2.5th to 97.5th percentile of $\{\Delta^{*}_b\}_{b=1}^{10\,000}$.
-
-Movie identifiers are not available from any reachable source: the archive mirror omits the `urls_*.txt` files, and the canonical host did not respond. Review ids are, however, ordered by movie within each directory. The mean TF-IDF cosine between reviews with adjacent ids is 0.092–0.129, against 0.035–0.038 for random pairs, and it decays to the random level by a lag of 20–30 ids (`results/data/duplicate_audit.json`). Blocks of 30 consecutive ids, the dataset's cap on reviews per movie, therefore approximate movie clusters; a movie that straddles a block boundary is split across two blocks, so some dependence remains. The two partitions contain disjoint sets of movies, as the dataset's README states.
-
-## Results on the official test partition
-
-All rows score the same 25,000 official test reviews (12,500 per class). Intervals are 95% stratified block-bootstrap percentile intervals. Data: [`results/official_test/metrics.csv`](results/official_test/metrics.csv); per-review scores and labels: [`predictions.csv.gz`](results/official_test/predictions.csv.gz).
-
-<!-- table:results -->
-<!-- /table:results -->
+### Training
 
 <picture>
-  <source media="(min-width: 960px) and (prefers-color-scheme: dark)" srcset="visual_outputs/10_class_error_rates_dark.png">
-  <source media="(max-width: 959px) and (prefers-color-scheme: dark)" srcset="visual_outputs/10_class_error_rates_narrow_dark.png" width="360">
-  <source media="(max-width: 959px)" srcset="visual_outputs/10_class_error_rates_narrow_light.png" width="360">
-  <img src="visual_outputs/10_class_error_rates_light.png" width="830" alt="Class-conditional error rates with 95% intervals on the official test partition, negative-class versus positive-class error: historical SVC 13.3% vs 13.0%; SVC on 25,000 reviews 11.1% vs 12.2%; logistic regression 11.1% vs 11.4%; LinearSVC on 25,000 reviews 11.4% vs 11.3%; LinearSVC on 8,000 reviews 14.3% vs 12.1%; LinearSVC with 1–2-grams 9.9% vs 9.5%; LinearSVC with 1–2-grams and cleaning v2 10.1% vs 9.3%.">
+  <source media="(min-width: 960px) and (prefers-color-scheme: dark)" srcset="visual_outputs/12_training_tradeoffs_dark.png">
+  <source media="(max-width: 959px) and (prefers-color-scheme: dark)" srcset="visual_outputs/12_training_tradeoffs_narrow_dark.png" width="360">
+  <source media="(max-width: 959px)" srcset="visual_outputs/12_training_tradeoffs_narrow_light.png" width="360">
+  <img src="visual_outputs/12_training_tradeoffs_light.png" width="830" alt="Three panels per controlled comparison: fit-time ratio, fit-memory ratio and paired official-test accuracy difference. Size, SVC: 15.5 times the fit time, 1.9 times the memory, +1.54 pp. Size, LinearSVC: 3.1, 2.7, +1.80 pp. LinearSVC versus logistic regression: 0.82, 0.97, −0.10 pp. SVC versus LinearSVC: 194, 2.7, −0.22 pp. 1–2-grams versus unigrams: 3.6, 3.9, +1.66 pp. Cleaning v2 versus legacy-v1: 1.3, 0.98, −0.01 pp. Final versus historical model: 0.38, 2.7, +3.42 pp.">
 </picture>
 
-Asymmetry between the two class-conditional error rates depends on the model rather than being a stable property of the task. In an exploratory, post hoc analysis ([`exploratory_class_asymmetry.csv`](results/official_test/exploratory_class_asymmetry.csv)), $e_{\text{neg}} - e_{\text{pos}}$ is +2.26 points (+1.21 to +3.34) for LinearSVC trained on the historical 8,000 reviews, −1.10 (−2.08 to −0.14) for the SVC trained on all 25,000, and indistinguishable from zero for the other trained candidates.
+Fit times are medians of three runs in fresh processes (one run for `svc_uni_full`), measured while other processes
+kept 3–5 logical CPUs busy; ratios compare the two configurations of each pre-specified comparison. Training-set size
+and word bigrams buy similar accuracy at different costs. Training on 25,000 instead of 8,000 reviews costs LinearSVC
+3.1 times the fit time (1.07 to 3.30 s) for +1.80 pp [+1.51, +2.12], but costs the SVC 15.5 times (41.2 to 641 s) for
++1.54 pp [+1.20, +1.88]. 1–2-grams cost 3.6 times the fit time and 3.9 times the fit's memory increment (154 to 602
+MB), as the vocabulary grows from 108,635 to 1,594,660 terms. Fitting the vectoriser takes 63–85% of every LinearSVC
+and logistic-regression fit, and libsvm's optimisation at least 97% of every SVC fit. Complete tables: [benchmark
+report](docs/BENCHMARKS.md#training).
 
-### Paired comparisons
-
-Each row compares two candidates that differ in the named factor only, except the last, which combines all factors and is attributable to none of them alone. Positive values favour A. Data: [`paired_differences.csv`](results/official_test/paired_differences.csv), which also holds macro F1 and class-conditional differences.
-
-<!-- table:paired -->
-<!-- /table:paired -->
-
-The resampling unit hardly changes the intervals: example-level, 30-id and 60-id intervals agree to within 0.03 points at either end. Either the 30-id blocks capture little of the remaining dependence, or paired differences are insensitive to it; the data cannot distinguish the two.
-
-### Sensitivity to train–test overlap
-
-123 test reviews occur verbatim in the training partition, and one more exceeds a TF-IDF cosine of 0.9 to a training review. Removing these 124 changes no accuracy by more than 0.13 points (the majority-class rule) and no trained candidate's by more than 0.05. Every paired difference keeps its sign and moves by at most 0.04 points ([`overlap_sensitivity.csv`](results/official_test/overlap_sensitivity.csv)).
-
-<!-- table:overlap -->
-<!-- /table:overlap -->
-
-## Development-set selection
-
-Selection used the official training partition only. LinearSVC became the branch estimator for the feature and cleaning comparisons because its unigram development accuracy exceeded logistic regression's, and the frozen protocol named `linsvc_bi_v2_full` the final model, by the highest development accuracy among the C-tuned candidates, before any test score existed. Data: [`results/dev/`](results/dev/).
-
-<!-- table:development -->
-<!-- /table:development -->
-
-Logistic regression's selected C lies at the upper edge of its grid for 1–2-gram features; no frozen candidate uses those settings. The linear-kernel SVC was not tuned: one fit on 20,000 reviews took about 19 minutes on this machine.
-
-The ablation removes one component of cleaning v2 at a time (development folds only). No component moves mean accuracy by more than 0.06 points, which is small against the fold-to-fold standard deviation of about 1.1 points.
-
-<!-- table:ablation -->
-<!-- /table:ablation -->
-
-## Behavioural suite (provisional: labels not adjudicated)
-
-The suite holds 237 constructed sentences in minimal pairs, label-preserving sets and single cases ([`behavioural/`](behavioural/)). An AI assistant proposed every label, and no person has reviewed them. These results are therefore excluded from the principal findings, and they do not estimate error rates on natural reviews. Template groups are assigned whole to development or held-out families; the table reports the held-out families. A unit (pair, set or single case) fails if any member is mislabelled. Each cell gives the failure rate in percent, failed/total units, and a 95% family-level bootstrap interval. Data: [`failure_rates.csv`](results/behavioural/failure_rates.csv); adjudication queue: [`annotation_queue_v1.csv`](behavioural/annotation_queue_v1.csv).
-
-<!-- table:behavioural -->
-<!-- /table:behavioural -->
-
-On the held-out families, every trained candidate fails 81–89% of negation units and 75–88% of contrast units, and none fails an intensity unit. Sarcasm failure ranges from 40% to 80% over only 10 units in 4 families, too few to rank candidates. The majority-class rule fails every unit that has a positive member, which gives a reference level for each phenomenon.
-
-**Architectural property, not a measurement.** The development family `con-but` pairs sentences that are word permutations of each other ("The acting was great, but overall the film was dull." / "The acting was dull, but overall the film was great."). Under both cleaning versions the two members have identical token multisets, hence identical unigram TF-IDF vectors and identical scores, so every unigram candidate fails such pairs by construction. Word bigrams make the members distinguishable but do not guarantee the correct order of evidence.
-
-## Computational cost and latency
-
-Wall-clock times on one laptop CPU (Intel Core Ultra 7 165H, 16 cores, 31.5 GB). Fits ran alongside other jobs, so their times indicate scale only. Batch scoring covers cleaning, TF-IDF and the decision function for all 25,000 test reviews in one call. Single-request latency repeats that path for one review at a time over a fixed sample of 1,000 reviews, excluding HTTP handling. The historical model's fit time is that of the `train.py` re-fit; the original run took 67.4 s. Data: [`inference.csv`](results/official_test/inference.csv), [`results/study/fits/`](results/study/fits/).
-
-<!-- table:cost -->
-<!-- /table:cost -->
-
-No Claude model has been run, so this repository contains no LLM accuracy, token count, cost or latency. The runner in [`study/llm/`](study/llm/) is complete and validated offline, and a live run requires an explicit `--max-spend-usd`. For the frozen 2,000-review subset with four few-shot exemplars, the runner's conservative pre-flight bound, which prices every response at the 1,024-token output cap, is $1.38 for Claude Haiku 5.5, $27.51 for Claude Sonnet 5.5 and $55.02 for Claude Opus 5.5 in online mode, and half that in batch mode. These are upper bounds, not measurements. Public IMDB reviews are widely redistributed, so any LLM result here would carry an unquantified risk of training-data contamination.
-
-## Historical results (internal holdout, protocol of 2026-11-06)
-
-These results predate the study and keep their original protocol. The historical model (`svc_uni_8k_historical`) was fitted on 8,000 reviews and evaluated on 2,000 held-out reviews, both drawn from a 10,000-review sample of the official training partition by a stratified 80/20 split (seed 42). That split does not enforce movie-level separation, so its estimates characterise the internal partition only. Its intervals are 95% Wilson intervals, which treat reviews as independent.
-
-On that holdout the model's accuracy is 89.35% (87.92–90.63%) and its macro F1 89.34%. Its class-conditional error rates are 13.9% for negative reviews (139/1,000; 11.9–16.2%) and 7.4% for positive reviews (74/1,000; 5.9–9.2%). The official-test estimates for the same artefact are in the results table above. The original metrics are archived unchanged in [`results/historical/metrics.json`](results/historical/metrics.json), and [`refit_equivalence.json`](results/historical/refit_equivalence.json) shows that the Pipeline re-fit equals the original artefact parameter for parameter. Figures 06–08 come from `scripts/make_readme_figures.py`; their data are in `visual_outputs/06–08_*.csv`, and the [historical run report](visual_outputs/REPORT.md) gives details.
+### Serving
 
 <picture>
-  <source media="(min-width: 960px) and (prefers-color-scheme: dark)" srcset="visual_outputs/07_error_by_length_dark.png">
-  <source media="(max-width: 959px) and (prefers-color-scheme: dark)" srcset="visual_outputs/07_error_by_length_narrow_dark.png" width="360">
-  <source media="(max-width: 959px)" srcset="visual_outputs/07_error_by_length_narrow_light.png" width="360">
-  <img src="visual_outputs/07_error_by_length_light.png" width="830" alt="Historical internal holdout: error rate with 95% intervals by review-length quartile and true class. Negative reviews: 15.3%, 11.8%, 15.4% and 13.4% across quartiles, 13.9% overall. Positive reviews: 7.3%, 5.6%, 9.5% and 6.9%, 7.4% overall.">
+  <source media="(min-width: 960px) and (prefers-color-scheme: dark)" srcset="visual_outputs/13_serving_latency_dark.png">
+  <source media="(max-width: 959px) and (prefers-color-scheme: dark)" srcset="visual_outputs/13_serving_latency_narrow_dark.png" width="360">
+  <source media="(max-width: 959px)" srcset="visual_outputs/13_serving_latency_narrow_light.png" width="360">
+  <img src="visual_outputs/13_serving_latency_light.png" width="830" alt="Log-log chart of HTTP latency against sustained throughput over concurrency 1 to 32 for three served configurations, p50 solid and p95 dashed. Historical SVC: 98 requests/s at a 10.0 ms p50 at concurrency 1, saturating near 117 requests/s while p50 rises to 272 ms at concurrency 32. LinearSVC with unigrams: 420 requests/s at 2.3 ms, peaking at 688 requests/s. Final model: 341 requests/s at 2.8 ms, peaking at 544 requests/s. At concurrency 32 the p95 of both linear models rises to 180–230 ms.">
 </picture>
 
-<picture>
-  <source media="(min-width: 960px) and (prefers-color-scheme: dark)" srcset="visual_outputs/08_score_contributions_dark.png">
-  <source media="(max-width: 959px) and (prefers-color-scheme: dark)" srcset="visual_outputs/08_score_contributions_narrow_dark.png" width="360">
-  <source media="(max-width: 959px)" srcset="visual_outputs/08_score_contributions_narrow_light.png" width="360">
-  <img src="visual_outputs/08_score_contributions_light.png" width="830" alt="Additive decomposition of the historical model's decision function for 'The movie was not good.': good +0.850, not −0.295, was −0.270, the +0.152, movie −0.138, intercept +0.002; total +0.301, so the label is positive.">
-</picture>
+<!-- table:serving -->
+| Configuration | Model-only p50, ms | HTTP p50 / p95 at concurrency 1, ms | Peak throughput, requests/s (concurrency) | HTTP p50 / p95 at peak, ms | Server CPU s per 1,000 requests | Failed / completed |
+|---|---:|---|---:|---|---:|---|
+| `svc_uni_8k_historical` | 7.41 | 10.0 / 13.2 | 117 (8) | 68.0 / 78.1 | 8.70 | 0 / 19,638 |
+| `linsvc_uni_full` | 0.59 | 2.3 / 2.9 | 688 (16) | 23.1 / 27.0 | 1.65 | 0 / 101,818 |
+| `linsvc_bi_v2_full` | 0.90 | 2.8 / 4.0 | 544 (16) | 29.2 / 34.5 | 2.08 | 0 / 81,928 |
+<!-- /table:serving -->
 
-The decomposition shows why the historical model labels "The movie was not good." positive. Its score, +0.301, is a sum in which the unigram *not* contributes −0.295 while *good* contributes +0.850. A unigram model assigns *not* one weight regardless of the word it negates, so it cannot represent the scope of negation. Figure 06 shows the five constructed probes behind this example; the behavioural suite measures the same construction systematically.
+Medians over two sweeps, each with a fresh server; sweep ranges and every concurrency level are in the [benchmark
+report](docs/BENCHMARKS.md#http-serving). The model-only p50 comes from the in-process benchmark under similar
+background load. At concurrency 1, HTTP adds 1.7–2.6 ms to the p50 latency of single-review scoring. Throughput
+saturates at concurrency 8–16, after which latency grows with the queue. At concurrency 32 the single-threaded client,
+which shared the host, used up to 0.95 of a CPU, so that level is partly client-limited for the linear models. A fresh
+server took 3.3–5.5 s from process start to its first successful `GET /model`.
 
-<picture>
-  <source media="(min-width: 960px) and (prefers-color-scheme: dark)" srcset="visual_outputs/06_probe_outputs_dark.png">
-  <source media="(max-width: 959px) and (prefers-color-scheme: dark)" srcset="visual_outputs/06_probe_outputs_narrow_dark.png" width="360">
-  <source media="(max-width: 959px)" srcset="visual_outputs/06_probe_outputs_narrow_light.png" width="360">
-  <img src="visual_outputs/06_probe_outputs_light.png" width="830" alt="Signed decision scores of the historical model on five constructed probes: 'An absolute masterpiece…' +1.12, 'Boring, predictable…' −3.86, 'I expected to hate it, but…' +0.51, 'The movie was good.' +0.67, all correct; 'The movie was not good.' +0.30, labelled positive, wrong.">
-</picture>
+### Inference economics
 
-## Reproduction
+No paid API was called, so no charge was observed. Local costs below are estimates: measured CPU seconds per 1,000
+predictions × price per vCPU-hour ÷ 3,600 ÷ utilisation, at a reference of 0.05 USD per vCPU-hour and 50%
+utilisation, with the range over 0.02–0.10 USD and 25–100% utilisation. The prices are parameters, not quotes from a
+provider, and cover CPU time only. Batch rows use in-process scoring at batch size 1,024; interactive rows use the
+server's CPU time per completed HTTP request at its highest-throughput concurrency.
 
-Python 3.15 and [uv](https://docs.astral.sh/uv/); on Windows use `.venv\Scripts\python` in place of `.venv/bin/python`. The downloads total about 186 MB and are never committed.
+<!-- table:economics -->
+| Configuration | Mode | CPU s per 1,000 predictions (measured) | USD per million predictions, reference (estimate) | Range over rates and utilisations (estimate) |
+|---|---|---:|---:|---|
+| `svc_uni_8k_historical` | batch, in-process | 5.30 | 0.15 | 0.029–0.59 |
+| `svc_uni_8k_historical` | interactive HTTP | 8.70 | 0.24 | 0.048–0.97 |
+| `svc_uni_full` | batch, in-process | 12.1 | 0.34 | 0.067–1.3 |
+| `logreg_uni_full` | batch, in-process | 0.125 | 0.0035 | 0.00069–0.014 |
+| `linsvc_uni_full` | batch, in-process | 0.133 | 0.0037 | 0.00074–0.015 |
+| `linsvc_uni_full` | interactive HTTP | 1.65 | 0.046 | 0.0092–0.18 |
+| `linsvc_uni_8k` | batch, in-process | 0.117 | 0.0033 | 0.00065–0.013 |
+| `linsvc_bi_full` | batch, in-process | 0.320 | 0.0089 | 0.0018–0.036 |
+| `linsvc_bi_v2_full` | batch, in-process | 0.492 | 0.014 | 0.0027–0.055 |
+| `linsvc_bi_v2_full` | interactive HTTP | 2.08 | 0.058 | 0.012–0.23 |
+<!-- /table:economics -->
 
-```bash
-uv venv --python 3.15
-uv pip install -r requirements-dev.txt
-mkdir -p data/raw/fastai-imdb data/raw/hf-imdb-e6281661
-curl -L -o data/raw/fastai-imdb/imdb.tgz https://s3.amazonaws.com/fast-ai-nlp/imdb.tgz
-curl -L -o data/raw/hf-imdb-e6281661/train-00000-of-00001.parquet \
-  https://huggingface.co/datasets/stanfordnlp/imdb/resolve/e6281661ce1c48d982bc483cf8a173c1bbeb5d31/plain_text/train-00000-of-00001.parquet
-curl -L -o data/raw/hf-imdb-e6281661/test-00000-of-00001.parquet \
-  https://huggingface.co/datasets/stanfordnlp/imdb/resolve/e6281661ce1c48d982bc483cf8a173c1bbeb5d31/plain_text/test-00000-of-00001.parquet
-.venv/bin/python train.py                     # historical model; publishes models/serving.json
-.venv/bin/python -m study.data                # verifies both sources; writes split membership
-.venv/bin/python -m study.audit               # duplicate, near-duplicate and id-order audit
-.venv/bin/python -m study.develop --jobs 4    # development selection (about 10 minutes)
-.venv/bin/python -m study.fit                 # frozen candidates (the SVC fit takes about 17 minutes)
-.venv/bin/python -m study.protocol verify     # every locked file must match protocol/LOCK.json
-.venv/bin/python -m study.evaluate score      # refuses if results/official_test/predictions.csv.gz exists
-.venv/bin/python -m study.evaluate analyse
-.venv/bin/python -m study.exploratory
-.venv/bin/python -m study.behavioural evaluate
-.venv/bin/python -m study.figures
-.venv/bin/python scripts/make_readme_figures.py
-.venv/bin/python -m study.report --check      # README tables must match the result files
-.venv/bin/python -m pytest tests/
-```
+At the reference point, the CPU time for a million predictions costs about 0.014 USD in batch and 0.058 USD over HTTP
+for the final model, against 0.15 and 0.24 USD for the historical model. Prices and utilisation scale every
+configuration alike, so the ratios hold at any price: the final model needs 0.093 times the historical model's batch
+CPU and 0.24 times its server CPU per HTTP request. No LLM has been evaluated, so none appears in these comparisons.
 
-`study.evaluate score` refuses to run when a scored predictions file exists; to repeat the scoring, delete `results/official_test/predictions.csv.gz` first. Fitted artefacts and their SHA-256 values match the recorded ones only under the recorded library versions (`results/study/fits/*.json`, `results/official_test/scoring_log.json`); they have not been reproduced on a second machine.
+## Behavioural robustness (provisional)
 
-## Provenance and integrity
+A suite of 237 constructed sentences in minimal pairs, label-preserving sets and single cases probes negation,
+contrast, sarcasm and intensity ([`behavioural/`](behavioural/)). An AI assistant proposed every label and no person
+has reviewed them, so these results are provisional and do not estimate error rates on natural reviews. On the
+held-out template families, every trained configuration fails 81–89% of negation units and 75–88% of contrast units,
+and none fails an intensity unit; sarcasm (10 units in 4 families) is too sparse to rank configurations. Unigram
+configurations fail word-permutation pairs such as "The acting was great, but overall the film was dull." / "The
+acting was dull, but overall the film was great." by construction, because both members have identical unigram TF-IDF
+vectors. Table and intervals: [supplementary
+results](docs/RESULTS.md#behavioural-suite-provisional-labels-not-adjudicated).
 
-- **Sources.** [`source_manifest.json`](results/data/source_manifest.json) pins the fast.ai archive (144,440,600 bytes) and the two Hugging Face parquet files by SHA-256. `study.data` stops unless the sizes, the hashes and the cross-source (text, label) multisets all agree.
-- **Split membership.** [`split_membership.csv.gz`](results/data/split_membership.csv.gz) lists all 50,000 labelled reviews by `partition/class/review_id`. For each it records a 64-bit text hash, star rating, length, bootstrap block, development fold and historical role, and no review text. The historical 10,000-review sample maps onto the training partition without loss; 30 of its texts occur under more than one official id.
-- **Duplicates.** Exact duplicates leave 96 redundant copies in the training partition and 199 in the test partition, none with conflicting labels. Normalisation adds no cross-partition matches beyond the 123 exact ones ([`duplicate_audit.json`](results/data/duplicate_audit.json)).
-- **Freeze.** [`protocol_v1.json`](protocol/protocol_v1.json) fixed the candidates and their artefact hashes, the comparisons, metrics, resampling, slices, the overlap-exclusion rule, the LLM subset and the final-model rule. [`LOCK.json`](protocol/LOCK.json) holds the SHA-256 of every file the evaluation depends on. Both were pushed before the test partition was scored. `study.evaluate score` refuses to run unless `study.protocol verify` passes, and CI runs the same verification on every push.
-- **Scoring.** [`scoring_log.json`](results/official_test/scoring_log.json) records the protocol and lock hashes, timestamps, library versions and hardware of the single scoring run. It ran at commit `88d8102`; the working tree differed from that commit only in presentation files outside the lock. No candidate, setting or pre-specified analysis changed afterwards; the class-asymmetry analysis was added after scoring and is labelled exploratory.
-- **Figures and tables.** Figures 09–10 come from `study/figures.py`, figures 06–08 from `scripts/make_readme_figures.py`, each from committed CSV files. The README's tables are generated by `study/report.py`, and CI fails if they drift from the result files.
+## Limitations and validity threats
 
-## Model card
+- **Approximate grouping.** Movie identifiers are unavailable, so intervals resample blocks of 30 consecutive review
+  ids as a proxy for movies. Movies that straddle block boundaries leave residual dependence, and intervals may be
+  somewhat narrow; example-level and 60-id intervals differ from the 30-id intervals by at most 0.03 points.
+- **One dataset.** All estimates describe English IMDB reviews with polar ratings; mixed reviews (ratings 5–6) are
+  excluded by construction. They are not comparable with published results that use other training sets,
+  preprocessing or protocols.
+- **Untuned SVC.** The linear-kernel SVC keeps the historical C=1, so comparisons involving it confound the estimator
+  with regularisation; its fit and inference costs also depend on C through the number of support vectors.
+- **Post hoc efficiency analysis.** The benchmark and the Pareto set were produced after the test partition had
+  been scored. The set uses point estimates, and neighbouring configurations can differ by less than their paired
+  intervals. No configuration was selected, tuned or changed on these results.
+- **One loaded machine.** All timings come from one Windows laptop CPU, single-threaded, while other processes kept
+  3–12 of its 22 logical CPUs busy. Absolute times would be shorter on an idle machine, and servers, Linux, other
+  CPUs, `httptools` or `uvloop`, or several workers would change them; the HTTP client shared the host with the
+  server.
+- **Benchmark workload.** Costs are measured on 2,000 training-partition reviews, not on the test reviews whose
+  accuracy they are plotted against; per-review cost depends on review length.
+- **Cost model.** Prices and utilisation are hypothetical; memory, storage, network and engineering costs are
+  excluded.
+- **Lexical overlap screen only.** The duplicate audit detects exact, normalised and near-lexical overlap between
+  partitions; paraphrased duplicates escape it.
+- **Unadjudicated behavioural labels.** The suite's labels are proposals by an AI assistant; its sentences are short
+  and templated.
+- **No LLM measurements.** The Claude baseline in [`study/llm/`](study/llm/) is implemented and validated offline but
+  has not been run, so this repository reports no LLM accuracy, token count, charge or latency.
 
-- **Models.** The eight frozen candidates in the results table. The served default is the historical model `9e34bdd2005c`, published by `python train.py`; any study candidate under `models/study/` can be published to `models/serving.json` with `src.pipeline.publish`. Every artefact is one scikit-learn `Pipeline` (cleaning, TF-IDF, linear classifier) with a manifest recording its configuration, training-set hash, SHA-256 and library versions.
-- **Intended use.** Research baseline and teaching reference for binary polarity classification of English movie reviews of review length. It also serves as a fixed reference against which other classifiers, including LLMs, can be compared on identical examples.
-- **Out of scope.** Decisions about people; content moderation; domains other than film reviews; non-English, short or conversational text; mixed or neutral opinions, which the training data excludes by construction; probability estimates, since scores are uncalibrated and model-specific; inputs controlled by an adversary.
-- **Evaluation.** Official IMDB test partition: 25,000 reviews, 12,500 per class. Metrics are accuracy, macro F1 and class-conditional precision, recall and error, with stratified block-bootstrap intervals. For the final model, accuracy is 90.26% (89.80–90.70%).
-- **Known failure modes.** Bag-of-n-gram features carry no syntax, so negation, contrast and sarcasm reach the model only as co-occurring terms. On the provisional behavioural suite, trained candidates fail most negation and contrast units. Errors concentrate at ratings 4 and 7. Class-conditional asymmetry varies by model (figure 10). A review whose words are all out of vocabulary receives the intercept's sign in batch scoring; the API returns 422 for it instead.
-- **Training data.** The official IMDB training partition (Maas et al., 2011); the historical model uses an 8,000-review subset. The data are public user reviews, and the Hugging Face dataset card lists the licence as `other`. Cite Maas et al., "Learning Word Vectors for Sentiment Analysis", ACL 2011.
-- **Ethical considerations.** The reviews reflect the opinions and language of IMDB users who wrote them before 2011. Vocabulary-based models can encode associations between sentiment and named entities, genres or dialects. No fairness or subgroup analysis has been performed.
+## Documentation
 
-## Methodological limitations
+- [Reproduction guide](docs/REPRODUCING.md): environment, data download and checksums, and every command from
+  training to figures.
+- [Benchmark report](docs/BENCHMARKS.md): hardware, conditions, measurement boundaries, and the complete training,
+  inference, HTTP and cost tables.
+- [Supplementary results](docs/RESULTS.md): metrics with macro F1, paired comparisons with sensitivity intervals,
+  train–test overlap, development selection, the behavioural suite and the historical evaluation.
+- [Model card](docs/MODEL_CARD.md): configurations and artefact identifiers, intended use, failure modes, data
+  attribution, the unexecuted LLM baseline and the serving contract.
+- [Protocol](protocol/protocol_v1.json) and [lock](protocol/LOCK.json); [result files](results/README.md) with the
+  command that produces each; [historical run report](visual_outputs/REPORT.md); [phone-width
+  figures](docs/narrow-figures.md).
 
-- **Approximate grouping.** Intervals resample 30-id blocks as a proxy for movies. Movies that straddle block boundaries leave residual dependence, so intervals may remain somewhat narrow. The example-level and 60-id sensitivity intervals bracket this choice.
-- **One partition, one domain.** All estimates describe English IMDB reviews with polar ratings. Mixed reviews (ratings 5–6) are excluded by the dataset's construction.
-- **Lexical overlap screen only.** The duplicate audit detects exact, normalised and near-lexical overlap; paraphrased duplicates escape it.
-- **Approximate development folds.** Development folds of 100-id blocks only approximate movie separation, so development estimates may be optimistic; this can affect selection but not the test estimates.
-- **Untuned SVC.** The linear-kernel SVC keeps the historical C=1, so comparisons involving it confound estimator and regularisation.
-- **Timing.** Fit and inference times were measured once on a shared laptop. They indicate scale, not stable throughput.
-- **Synthetic behavioural suite.** The suite's labels are unadjudicated proposals by an AI assistant. Its sentences are short and templated, and its held-out sarcasm and contrast sets contain 4–5 families each.
-- **Post hoc analysis.** The class-asymmetry differences were computed after scoring and are exploratory.
-- **No LLM measurements.** The Claude baseline has not been run, so no LLM claim of any kind is made.
+## Data and licence
 
-## API
-
-`POST /predict` takes `{"text": "..."}` and returns `label`, `sentiment` (0 or 1), `margin` and `model_version`. `margin` is the served model's signed decision score $f(x)$ at full precision; despite its name, it is neither a geometric margin nor a probability. `tests/test_api.py` tests these guarantees:
-
-- one `decision_function` call per request;
-- the label follows the score, with ties negative;
-- a 422 of type `no_recognized_vocabulary` when the cleaned text has no in-vocabulary feature;
-- a 422 for empty, over-long (more than 20,000 characters) or letter-free input;
-- a 500 without internal details for unexpected errors.
-
-At startup the server loads the artefact named by `models/serving.json` (or `$SENTIMENT_MODELS_DIR/serving.json`). It refuses to serve unless the manifest's schema version, the artefact's SHA-256, the Pipeline's steps, cleaning version, classes and feature dimension, and the scikit-learn version all match. `GET /model` returns the served artefact's manifest summary.
-
-```bash
-.venv/bin/python -m uvicorn src.api:app --port 8000
-curl -X POST http://127.0.0.1:8000/predict -H "Content-Type: application/json" \
-  -d '{"text": "A wonderful, heartfelt film."}'
-```
-
-```json
-{"label": "positive", "sentiment": 1, "margin": 1.6742724439651835, "model_version": "9e34bdd2005c"}
-```
-
-## Pending work
-
-1. **Human adjudication** of the behavioural suite's labels through the annotation queue, with agreement statistics if more than one person reviews. Until then its results stay provisional.
-2. **The Claude baseline** on the frozen 2,000-review subset and the held-out behavioural families, once a spending limit is set. It will report accuracy, token use, realised cost and online latency separately from batch completion time.
-3. **A tuned linear-kernel SVC,** if its cost is justified, to separate estimator from regularisation in the SVC comparison.
-4. **Movie-level grouping** from the archive's `urls_*.txt` files, if a verifiable copy becomes available, replacing the id-block approximation.
-
-## Licence
-
-Code: [MIT](LICENSE). Data: see *Training data* in the [model card](#model-card).
+Large Movie Review Dataset v1.0: Andrew L. Maas, Raymond E. Daly, Peter T. Pham, Dan Huang, Andrew Y. Ng and
+Christopher Potts, "Learning Word Vectors for Sentiment Analysis", *Proceedings of ACL 2011*. The review text is not
+redistributed here; the Hugging Face dataset card lists its licence as `other`. Code: [MIT](LICENSE).
