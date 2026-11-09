@@ -1,0 +1,68 @@
+{
+  "generated_by": [
+    "study/figures.py",
+    "study/efficiency_figures.py",
+    "study/report.py"
+  ],
+  "generated_utc": "2026-11-09T02:04:04Z",
+  "git": {
+    "commit": "1dc16294767559bbd1652681efb8cb1c658ea8ca",
+    "sources": [
+      "study/figures.py",
+      "study/efficiency_figures.py",
+      "study/report.py",
+      "scripts/make_readme_figures.py",
+      "results"
+    ],
+    "sources_match_commit": true
+  },
+  "inputs_sha256": {
+    "results/official_test/metrics.csv": "d87568f5daa662f74ecd31335782c2ace30f4cb2def522f130a0eb067df5b215",
+    "results/official_test/paired_differences.csv": "bcde1681df5661e1b74825c0c09379af5cd8c03961d2e96a8db4fac2fcd96e78",
+    "results/benchmarks/training_runs.csv": "0c5f3b39445a9453ff9c5d987dff6bb74c27a18684cbc65500d919fd8f6c6777",
+    "results/benchmarks/inference.csv": "24c1d785266894e4358d94e465b9cd54b603f5898541a53eb27a604ef2a3037e",
+    "results/benchmarks/http.csv": "728a97706a06b9cbdfb6431c643fdfe7cd8a882b33666e49be45eae05a6f038a",
+    "results/benchmarks/environment.json": "1c8892f2c468db53f59aad27f15a09c52bf5c3cb0898a341ae9885b3327f8303",
+    "protocol/protocol_v1.json": "f9a748b142394acf82d355ba23b618857b3a97a3c8e4342f23d8b0e35ebb8ffd",
+    "results/behavioural/failure_rates.csv": "d125d1a9a3d6fd300795a5d33935f4c762c511366f7c55ebea257e0c1fc66e5d"
+  },
+  "figures": {
+    "09_paired_differences": "results/official_test/paired_differences.csv",
+    "10_class_error_rates": "results/official_test/metrics.csv",
+    "11_accuracy_vs_compute": [
+      "results/official_test/metrics.csv",
+      "results/benchmarks/inference.csv"
+    ],
+    "12_training_tradeoffs": [
+      "results/benchmarks/training_runs.csv",
+      "results/official_test/paired_differences.csv"
+    ],
+    "13_serving_latency": "results/benchmarks/http.csv"
+  },
+  "files": [
+    "09_paired_differences_dark.png",
+    "09_paired_differences_light.png",
+    "09_paired_differences_narrow_dark.png",
+    "09_paired_differences_narrow_light.png",
+    "10_class_error_rates_dark.png",
+    "10_class_error_rates_light.png",
+    "10_class_error_rates_narrow_dark.png",
+    "10_class_error_rates_narrow_light.png",
+    "11_accuracy_vs_compute_dark.png",
+    "11_accuracy_vs_compute_light.png",
+    "11_accuracy_vs_compute_narrow_dark.png",
+    "11_accuracy_vs_compute_narrow_light.png",
+    "12_training_tradeoffs_dark.png",
+    "12_training_tradeoffs_light.png",
+    "12_training_tradeoffs_narrow_dark.png",
+    "12_training_tradeoffs_narrow_light.png",
+    "13_serving_latency_dark.png",
+    "13_serving_latency_light.png",
+    "13_serving_latency_narrow_dark.png",
+    "13_serving_latency_narrow_light.png"
+  ],
+  "notes": [
+    "Pareto membership in figure 11 is computed post hoc from official-test point estimates and was not used to select any configuration.",
+    "Benchmarks use official training-partition reviews; the official test partition is read only through the frozen prediction files."
+  ]
+}
