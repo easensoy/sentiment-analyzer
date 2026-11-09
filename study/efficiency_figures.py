@@ -339,8 +339,11 @@ def draw_serving(df: pd.DataFrame, theme: str, narrow: bool) -> Canvas:
             point(cv, xv, sy(p95), shape, False, color, size=7)
         last = part.iloc[-1]
         first = part.iloc[0]
-        cv.text(sx(first["throughput"]) - 6, sy(first["p50"]) + 4, "c=1", size=SMALL, color="ink2", ha="right")
-        cv.text(sx(last["throughput"]) + 7, sy(last["p95"]) + 4, "c=32", size=SMALL, color="ink2")
+        flip = cid == "linsvc_uni_full"  # its end points sit beside the final model's: label the other side
+        cv.text(sx(first["throughput"]) + (7 if flip else -6), sy(first["p50"]) + 4, "c=1", size=SMALL, color="ink2",
+                ha="left" if flip else "right")
+        cv.text(sx(last["throughput"]) + (-7 if flip else 7), sy(last["p95"]) + 4, "c=32", size=SMALL, color="ink2",
+                ha="right" if flip else "left")
         if narrow:
             yk = y1 + 56 + 18 * k
             point(cv, m + 5, yk - 4, shape, True, color, size=8)
