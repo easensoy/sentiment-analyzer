@@ -15,6 +15,7 @@ sources and derived text tables stay in the git-ignored `data/raw/` and `data/de
 | `study/fits/*.json` | `python -m study.fit` | Per frozen candidate: configuration, training-set hash, artefact SHA-256 and fit time. |
 | `official_test/` | `python -m study.evaluate score` and `analyse` | Per-review scores and labels for every candidate, metrics, paired differences, slices, sensitivity analyses, inference timing and the scoring log. |
 | `behavioural/` | `python -m study.behavioural evaluate` | Per-case predictions and failure rates by phenomenon, split and ambiguity (provisional, unadjudicated). |
+| `benchmarks/` | `python -m study.benchmark train`, `inference`, `http`, `costs` | Per-run training time and memory, model-only inference timing with every batch pass, the HTTP concurrency sweep, compute-cost estimates, the workload's review ids (training partition only) and the hardware, software and background-load record; `superseded/` keeps runs replaced by the reported ones. |
 | `historical/` | archived from the 2026-11-07 run; `train.py` | The historical model's original metrics, holdout predictions (by row of `data/training_data.csv`) and the record that the Pipeline re-fit equals it. |
 
 `protocol/` holds the frozen evaluation protocol and `LOCK.json`, the SHA-256 of every file the
