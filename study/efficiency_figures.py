@@ -23,7 +23,7 @@ import pandas as pd
 from scripts.make_readme_figures import (BODY, NARROW, NARROW_SCALE, OUT, SMALL, THEMES, TITLE, WIDTH, Canvas,
                                          text_width, wrap)
 from study.figures import display_name, pp
-from study.report import frontier, tradeoffs
+from study.report import frontier, sig, tradeoffs
 
 ROOT = Path(__file__).resolve().parents[1]
 RESULTS = ROOT / "results"
@@ -142,7 +142,7 @@ def draw_frontier(df: pd.DataFrame, theme: str, narrow: bool) -> Canvas:
     sy = lambda v: y1 - (v * 100 - acc_lo) / (acc_hi - acc_lo) * (y1 - y0)
     lo_x, hi_x = df["cpu_lo"].min() / 1.4, df["cpu_hi"].max() * 1.4
     sx = log_scale(lo_x, hi_x, x0, x1)
-    key_lines = [f"{i + 1}  {role_name(r.candidate)}: {r.accuracy * 100:.2f}%, {r.cpu_s_per_1000:.2g} s"
+    key_lines = [f"{i + 1}  {role_name(r.candidate)}: {r.accuracy * 100:.2f}%, {sig(r.cpu_s_per_1000)} s"
                  for i, r in enumerate(df.itertuples())] if narrow else []
     height = y1 + 46 + (16 * len(key_lines) + 10 if narrow else 0)
     cv = Canvas(height, theme, width=width, scale=scale)
@@ -183,7 +183,8 @@ def draw_frontier(df: pd.DataFrame, theme: str, narrow: bool) -> Canvas:
         point(cv, px, py, SHAPE[r.estimator], r.n_train > 10_000, color)
         label = str(i + 1) if narrow else role_name(r.candidate)
         lx, ly, ha = place_label(label, px, py, obstacles, (x0, y0, right, y1))
-        cv.text(lx, ly, label, size=SMALL, color=color, weight="semibold" if r.pareto else "normal", ha=ha)
+        cv.text(lx, ly, label, size=SMALL, color=color, weight="semibold" if r.pareto else "normal", ha=ha,
+                knockout=True)
     if narrow:
         ky = y1 + 60
         for line in key_lines:
@@ -199,7 +200,7 @@ def tradeoff_data() -> pd.DataFrame:
 
 
 def ratio_label(v: float) -> str:
-    return f"×{v:.2g}" if v < 10 else f"×{v:.0f}"
+    return f"×{sig(v, 3 if v >= 10 else 2)}"
 
 
 def draw_tradeoffs(df: pd.DataFrame, theme: str, narrow: bool) -> Canvas:
@@ -255,6 +256,8 @@ def draw_tradeoffs(df: pd.DataFrame, theme: str, narrow: bool) -> Canvas:
         cv.text(x0 if not narrow else m, top - 10, name, size=SMALL, color="ink2", weight="semibold")
         for v in ticks:
             cv.line([sx(v)] * 2, [top, bottom], color="axis" if abs(v - ref) < 1e-12 else "grid")
+            if kind == "log" and abs(math.log10(v) - round(math.log10(v))) > 1e-9:
+                continue  # unlabelled 3x gridlines: labels at every half decade collide in narrow panels
             cv.text(sx(v), bottom + 16, fmt_tick(v) if kind == "log" else (pp(v, 0) if v else "0"), size=SMALL,
                     color="ink2", ha="center")
         for i, r in enumerate(df.itertuples()):
@@ -293,7 +296,8 @@ def draw_serving(df: pd.DataFrame, theme: str, narrow: bool) -> Canvas:
     title = "HTTP serving latency versus sustained throughput"
     subtitle = ("One uvicorn worker, loopback HTTP, batch size 1; closed-loop clients at concurrency 1, 2, 4, 8, 16 "
                 "and 32; 15 s per level after a 2 s warm-up; median of two sweeps; client on the same host. Solid: "
-                f"p50 latency; dashed: p95. {failed} of {total:,} requests failed.")
+                f"p50 latency; dashed: p95. " + (f"None of the {total:,} requests failed." if not failed
+                                                 else f"{failed:,} of {total:,} requests failed."))
     head = heading_height(m, right, title, subtitle)
     top = head + (40 if narrow else 30)
     plot_h = 240 if narrow else 300
