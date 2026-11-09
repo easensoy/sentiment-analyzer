@@ -1,0 +1,6 @@
+candidate,repeat,n_train,n_features,cleaning_s,vectoriser_fit_transform_s,estimator_fit_s,pipeline_fit_s,pipeline_fit_cpu_s,baseline_memory_mb,peak_memory_mb,fit_memory_increment_mb,max_abs_score_difference_vs_frozen
+svc_uni_8k_historical,0,8000,59770,0.664075,5.37487,73.6718,79.7107,67.5,176.926,399.23,222.305,0.000828338
+svc_uni_8k_historical,1,8000,59770,0.165393,1.40953,66.6575,68.2324,66.2344,176.527,397.848,221.32,0.000828338
+svc_uni_8k_historical,2,8000,59770,0.312567,1.88278,66.6187,68.814,65.4531,175.969,398.078,222.109,0.000828338
+svc_uni_full,0,25000,108635,0.392271,4.2487,1207.83,1212.48,967.672,201.695,615.871,414.176,0
+logreg_uni_full,0,25000,108635,1.21237,8.6321,2.30375,12.1482,9.04688,201.738,362.234,160.496,4.93137e-08
