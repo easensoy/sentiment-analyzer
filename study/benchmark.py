@@ -18,7 +18,7 @@ time uses time.perf_counter; CPU time uses process counters.
 
 Measurement boundaries.
   train      cleaning + TfidfVectorizer.fit_transform + estimator.fit on in-memory texts (= Pipeline.fit); data
-             loading excluded. Peak memory is the process's peak working set (Windows) or max RSS (Linux), with
+             loading excluded. Peak memory is the process's peak working set (Windows) or VmHWM (Linux), with
              the baseline after data loading reported separately.
   inference  in-process, warm artefact: cleaning + TF-IDF transform + one decision_function call; no HTTP, no JSON.
   http       client -> loopback TCP -> uvicorn (one worker, default thread pool) -> FastAPI validation -> the same
@@ -91,11 +91,19 @@ def memory_bytes() -> tuple[int, int]:
     """(current, peak) resident memory of this process in bytes."""
     if sys.platform == "win32":
         return _windows_memory()
-    import resource
-    with open("/proc/self/statm") as handle:
-        current = int(handle.read().split()[1]) * os.sysconf("SC_PAGE_SIZE")
-    peak = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * (1 if sys.platform == "darwin" else 1024)
-    return current, peak
+    if sys.platform.startswith("linux"):
+        # VmRSS and VmHWM come from one snapshot, in which the kernel reports the high-water mark as at least the
+        # current RSS; /proc/self/statm and ru_maxrss are separate counters and can disagree by hundreds of kB.
+        fields = {}
+        with open("/proc/self/status") as handle:
+            for line in handle:
+                key, _, value = line.partition(":")
+                if key in ("VmRSS", "VmHWM"):
+                    fields[key] = int(value.split()[0]) * 1024  # reported in kB
+        return fields["VmRSS"], fields["VmHWM"]
+    import resource  # other POSIX systems expose only the peak (ru_maxrss, bytes on macOS)
+    peak = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    return peak, peak
 
 
 def process_cpu_seconds(pid: int) -> float:
