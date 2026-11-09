@@ -27,5 +27,5 @@ jobs:
     - name: Verify the frozen evaluation protocol
       run: .venv/bin/python -m study.protocol verify
 
-    - name: Check the README result tables against the result files
+    - name: Check the generated tables in README.md and docs/ against the result files
       run: .venv/bin/python -m study.report --check
